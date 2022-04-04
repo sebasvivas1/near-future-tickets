@@ -2,14 +2,12 @@
 /* eslint-disable import/no-extraneous-dependencies */
 
 module.exports = {
-  purge: {
-    content: [
-      './pages/**/*.{js,jsx,ts,tsx}',
-      './components/**/*.{js,jsx,ts,tsx}',
-      './context/**/*.{js,jsx,ts,tsx}',
-    ],
-    // defaultExtractor: (content) => content.match(/[\w-/:]+(?<!:)/g) || [],
-  },
+  content: [
+    './pages/**/*.{js,jsx,ts,tsx}',
+    './components/**/*.{js,jsx,ts,tsx}',
+    './context/**/*.{js,jsx,ts,tsx}',
+  ],
+  // defaultExtractor: (content) => content.match(/[\w-/:]+(?<!:)/g) || [],
   darkMode: 'media', // 'media' or 'class'
   theme: {
     screens: {
@@ -33,6 +31,13 @@ module.exports = {
           300: '#79FCAF',
           400: '#47FA92',
           500: '#15F974',
+        },
+        figma: {
+          100: '#4E4E4E',
+          200: '#0F2026',
+          300: '#C9D9E1',
+          400: '#F1F8FB',
+          500: '#D94A3D',
         },
       },
     },
