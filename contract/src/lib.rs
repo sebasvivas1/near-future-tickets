@@ -2,7 +2,15 @@ use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::serde::Serialize;
 use near_sdk::serde::Deserealize;
 use near_sdk::collections::UnorderedMap;
-use near_sdk::{ env, near_bindgen, AccountId, Balance, Promise }
+use near_sdk::{ env, near_bindgen, AccountId, Balance, Promise };
+// NFT Standard
+use near_contract_standards::non_fungible_token::core::{NonFungibleToken, NonFungibleTokenResolver};
+use near_contract_standards::non_fungible_token::metadata::{NFTContractMetadata, NonFungibleTokenMetadataProvider, TokenMetadata, NFT_METADATA_SPEC};
+use near_contract_standards::non_fungible_token::NonFungibleToken;
+use near_contract_standards::non_fungible_token::{Token, TokenId};
+
+// HashMap import
+use std::collections:HashMap;
 
 near_sdk::setup_alloc!();
 
@@ -16,7 +24,6 @@ pub struct UserObject {
     organizedEvents: Vec<Event>,
     profile_pic: String,
     description: String,
-    badges: Vec<Badge>,
     tickets: Vec<Ticket>,
 }
 
@@ -37,22 +44,17 @@ pub struct Event {
     attendants: Vec<UserObject>
 }
 
-#[derive(Serialize, Deserealize, BorshSerialize, BorshDeserialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct Badge {
-    token_id: String,
-    owner: String,
-    event: Event,
-    banner: String,
-}
 
 #[derive(Serialize, Deserealize, BorshSerialize, BorshDeserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Ticket {
     token_id: String,
-    owner: String,
+    metadata: TokenMetadata,
+    owner_id: AccountId,
     event: Event,
-    banner: String,
+    image: String,
+    price: Balance,
+    royalty: HashMap<AccountId, u32>
 }
 
 
@@ -71,8 +73,8 @@ pub struct NEARFT {
     // Organized Events (myself)
     pub myEvents: Vec<Event>,
 
-    // Badges
-    pub badges: Vec<Badge>,
+    // Tickets
+    pub tickets: Vec<Ticket>,
 
     // Attendants
     pub attendants: Vec<UserObject>,
