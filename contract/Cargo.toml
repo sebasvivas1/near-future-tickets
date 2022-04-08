@@ -1,4 +1,4 @@
-[package]
+[ ackage]
 name = "greeter"
 version = "0.1.0"
 authors = ["Near Inc <hello@near.org>"]
