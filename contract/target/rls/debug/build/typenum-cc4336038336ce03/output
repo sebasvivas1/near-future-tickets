@@ -1,2 +1,0 @@
-cargo:rustc-env=TYPENUM_BUILD_CONSTS=/home/seb/Documents/NEAR/near-future-tickets/contract/target/rls/debug/build/typenum-cc4336038336ce03/out/consts.rs
-cargo:rustc-env=TYPENUM_BUILD_OP=/home/seb/Documents/NEAR/near-future-tickets/contract/target/rls/debug/build/typenum-cc4336038336ce03/out/op.rs

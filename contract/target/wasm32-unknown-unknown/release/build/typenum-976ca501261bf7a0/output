@@ -1,2 +1,0 @@
-cargo:rustc-env=TYPENUM_BUILD_CONSTS=/home/seb/Documents/NEAR/near-future-tickets/contract/target/wasm32-unknown-unknown/release/build/typenum-976ca501261bf7a0/out/consts.rs
-cargo:rustc-env=TYPENUM_BUILD_OP=/home/seb/Documents/NEAR/near-future-tickets/contract/target/wasm32-unknown-unknown/release/build/typenum-976ca501261bf7a0/out/op.rs

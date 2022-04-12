@@ -1,7 +1,0 @@
-/home/seb/Documents/NEAR/near-future-tickets/contract/target/rls/debug/deps/itoa-331611d2ec6ae993.rmeta: /home/seb/.cargo/registry/src/github.com-1ecc6299db9ec823/itoa-0.4.6/src/lib.rs
-
-/home/seb/Documents/NEAR/near-future-tickets/contract/target/rls/debug/deps/libitoa-331611d2ec6ae993.rlib: /home/seb/.cargo/registry/src/github.com-1ecc6299db9ec823/itoa-0.4.6/src/lib.rs
-
-/home/seb/Documents/NEAR/near-future-tickets/contract/target/rls/debug/deps/itoa-331611d2ec6ae993.d: /home/seb/.cargo/registry/src/github.com-1ecc6299db9ec823/itoa-0.4.6/src/lib.rs
-
-/home/seb/.cargo/registry/src/github.com-1ecc6299db9ec823/itoa-0.4.6/src/lib.rs:
