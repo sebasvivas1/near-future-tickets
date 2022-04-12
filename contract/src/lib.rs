@@ -132,7 +132,7 @@ impl NEARFT {
         status: u8,
         banner: String
      ) -> Event {
-        let caller = env::signer_account_id().to_string().clone();
+        let caller = env::signer_account_id().to_string();
         let index = i128::from(self.events.len() + 1);
         let organizer = self.users.get(&caller);
         // let organized_events_len = update_organizer.organized_events.len() + 1;
@@ -149,9 +149,10 @@ impl NEARFT {
             banner: banner
         };
         let mut update_organizer = organizer.unwrap();
+        let signer = env::signer_account_id().to_string();
         self.events.insert(&event.index, &event);
         update_organizer.organized_events.push(event.clone());
-        self.users.insert(&caller, &update_organizer);
+        self.users.insert(&signer, &update_organizer);
         // update_organized_events(&caller, event.clone());
         event
     }
