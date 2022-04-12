@@ -15,6 +15,9 @@ use near_contract_standards::non_fungible_token::{Token, TokenId};
 // HashMap import
 use std::collections::HashMap;
 
+pub use crate::nfts::*;
+mod nfts;
+
 near_sdk::setup_alloc!();
 
 // Objects
