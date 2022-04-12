@@ -102,9 +102,23 @@ impl NEARFT {
 
     // Get One User given its account id
     pub fn get_user(self, user_id: AccountId) -> User {
-        assert!(self.users.get(&user_id).is_none(), "User Doesnt Exist!");
+        assert!(self.users.get(&user_id).is_some(), "User Doesn't Exist!");
         let user = self.users.get(&user_id).unwrap();
         user
+    }
+
+    // Update User data (caller update its own data)
+    pub fn update_user(&mut self, full_name: String, profile_pic: String, description: String) -> User {
+        let caller = env::signer_account_id().to_string();
+        assert!(self.users.get(&caller).is_some(), "User doesn't Exist!");
+        let mut user = self.users.get(&caller).unwrap();
+        user.full_name = full_name;
+        user.profile_pic = profile_pic;
+        user.description = description;
+        env::log(b"User Updated");
+        self.users.insert(&caller, &user);
+        let new_user = self.users.get(&caller).unwrap();
+        new_user
     }
 
     // Create an Event
@@ -118,11 +132,10 @@ impl NEARFT {
         status: u8,
         banner: String
      ) -> Event {
-        let caller = env::signer_account_id().to_string();
-        let organizer = self.users.get(&caller);
+        let caller = env::signer_account_id().to_string().clone();
         let index = i128::from(self.events.len() + 1);
-        let update_organizer = organizer.unwrap();
-        let organized_events_len = update_organizer.organized_events.len() + 1;
+        let organizer = self.users.get(&caller);
+        // let organized_events_len = update_organizer.organized_events.len() + 1;
         let event = Event {
             organizer: caller,
             index: index,
@@ -135,10 +148,22 @@ impl NEARFT {
             status: status,
             banner: banner
         };
+        let mut update_organizer = organizer.unwrap();
         self.events.insert(&event.index, &event);
-        // update_organizer.organized_events.insert(organized_events_len, event);
+        update_organizer.organized_events.push(event.clone());
+        self.users.insert(&caller, &update_organizer);
+        // update_organized_events(&caller, event.clone());
         event
     }
+
+    // Update organized Events of signer user
+    // pub fn update_organized_events(&mut self, user_id: AccountId, event: Event) -> User {
+    //     let mut owner = self.users.get(&user_id).unwrap();
+    //     owner.organized_events.push(&event);
+    //     self.users.insert(&user_id, &owner);
+    //     let data = self.users.get(&user_id).unwrap();
+    //     data
+    // }
 
     // Get All events
     pub fn get_events(self) -> Vec<Event> {
@@ -156,6 +181,7 @@ impl NEARFT {
     // Get all events of one organizer
     // pub fn get_organizer_events(self, organizer: AccountId) -> Vec<Event> {
     //     assert!(self.users.get(&organizer).is_some(), "User doesn't exist");
-    //     let event_list = self.events.
+    //     let event_list = self.events.iter().find(|x| x.organizer == organizer.to_string());
+    //     event_list
     // }
 }
