@@ -40,6 +40,10 @@ module.exports = {
           500: '#D94A3D',
         },
       },
+      backgroundImage: {
+        'bg-1': 'url("/bg.png")',
+        'bg-ticket': 'url("/ticket.png")',
+      },
     },
   },
   variants: {
