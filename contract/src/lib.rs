@@ -1,9 +1,11 @@
+use near_sdk::json_types::ValidAccountId;
 use near_sdk::collections::UnorderedSet;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::serde::Serialize;
 use near_sdk::serde::Deserialize;
 use near_sdk::collections::{UnorderedMap, LazyOption};
-use near_sdk::{ env, near_bindgen, AccountId, Balance, Promise, PanicOnDefault, require, BorshStorageKey, PromiseOrValue};
+use near_sdk::{ env, near_bindgen, AccountId, Balance, Promise, PanicOnDefault, require, BorshStorageKey, PromiseOrValue, serde_json::json};
+use near_sdk::env::is_valid_account_id;
 
 // NFT Standards
 use near_contract_standards::non_fungible_token::metadata::{
@@ -17,6 +19,9 @@ use near_contract_standards::non_fungible_token::{Token, TokenId};
 use std::collections::HashMap;
 
 pub type TokenSeriesId = String;
+
+const MAX_PRICE: Balance = 1_000_000_000 * 10u128.pow(24);
+pub const TITLE_DELIMETER: &str = " #";
 
 // Objects
 #[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
@@ -52,19 +57,31 @@ pub struct TokenSeries {
 	tokens: UnorderedSet<TokenId>,
     price: Option<Balance>,
     is_mintable: bool,
-    royalty: HashMap<AccountId, u32>
+    royalty: HashMap<AccountId, u32>,
+    modality: u8,
+    capacity: u32,
+    date: String,
+    time: u64,
+    status: u8,
+    banner: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct TokenSeriesJson {
     token_series_id: TokenSeriesId,
 	metadata: TokenMetadata,
 	creator_id: AccountId,
-    royalty: HashMap<AccountId, u32>
+    royalty: HashMap<AccountId, u32>,
+    modality: u8,
+    capacity: u32,
+    date: String,
+    time: u64,
+    status: u8,
+    banner: String,
 }
 
-#[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Market {
     token_series_id: TokenSeriesId,
@@ -76,7 +93,7 @@ pub struct Market {
     copy: i64,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct MarketJson {
     token_series_id: TokenSeriesId,
@@ -86,9 +103,6 @@ pub struct MarketJson {
     price: Balance,
     royalty: HashMap<AccountId, u32>,
 }
-
-
-// Creo que falta algo de ticket ???
 
 // -------- Objects End --------- //
 
@@ -108,7 +122,8 @@ pub struct Contract {
     // NFT (Ticket)
     tokens: NonFungibleToken,
     metadata: LazyOption<NFTContractMetadata>,
-    token_series_by_id: UnorderedMap<TokenSeriesId, TokenSeries>
+    token_series_by_id: UnorderedMap<TokenSeriesId, TokenSeries>,
+    marketplace: UnorderedMap<TokenSeriesId, MarketJson>
 }
 
 impl Default for NEARFT {
@@ -128,7 +143,7 @@ enum StorageKey {
     Enumeration,
     Approval,
     TokenSeriesById,
-    TokenBySeriesInner { token_series: String },
+    TokensBySeriesInner { token_series: String },
     TokensPerOwner { account_hash: Vec<u8>},
 }
 
@@ -143,7 +158,7 @@ impl Contract {
             NFTContractMetadata {
                 spec: NFT_METADATA_SPEC.to_string(),
                 name: "near-future-tickets".to_string(),
-                symbol: "NEAR Future Tickets".to_string(),
+                symbol: "NEAR Future Ticket".to_string(),
                 icon: Some(DATA_IMAGE_SVG_NEAR_ICON.to_string()),
                 base_uri: None,
                 reference: None,
@@ -166,6 +181,7 @@ impl Contract {
             ),
             metadata: LazyOption::new(StorageKey::Metadata, Some(&metadata)),
             token_series_by_id: UnorderedMap::new(StorageKey::TokenSeriesById),
+            marketplace: UnorderedMap::new(b"0".to_vec()),
         }
     }
 
@@ -178,6 +194,205 @@ impl Contract {
     ) -> Token {
         self.tokens.internal_mint(token_id, token_owner_id, Some(token_metadata))
     }
+
+    #[payable]
+    #[payable]
+    pub fn nft_create_series(
+        &mut self,
+        creator_id: Option<AccountId>,
+        token_metadata: TokenMetadata,
+        price: Option<u128>,
+        royalty: Option<HashMap<AccountId, u32>>,
+        modality: u8,
+        capacity: u32,
+        date: String,
+        time: u64,
+        status: u8,
+        banner: String,
+    ) -> TokenSeriesJson {
+        let initial_storage_usage = env::storage_usage();
+        let caller_id = env::predecessor_account_id();
+
+        if creator_id.is_some() {
+            assert_eq!(creator_id.unwrap().to_string(), caller_id, "Caller is not creator_id");
+        }
+
+        let token_series_id = format!("{}", (self.token_series_by_id.len() + 1));
+
+        assert!(
+            self.token_series_by_id.get(&token_series_id).is_none(),
+            "Duplicate token_series_id"
+        );
+
+        let title = token_metadata.title.clone();
+        assert!(title.is_some(), "token_metadata.title is required");
+
+
+        let mut total_perpetual = 0;
+        let mut total_accounts = 0;
+        let royalty_res: HashMap<AccountId, u32> = if let Some(royalty) = royalty {
+            for (k , v) in royalty.iter() {
+                if !is_valid_account_id(k.as_bytes()) {
+                    env::panic_str("Not valid account_id for royalty");
+                };
+                total_perpetual += *v;
+                total_accounts += 1;
+            }
+            royalty
+        } else {
+            HashMap::new()
+        };
+
+        assert!(total_accounts <= 10, "Royalty exceeds 10 accounts");
+
+        assert!(
+            total_perpetual <= 9000,
+            "Exceeds maximum royalty -> 9000",
+        );
+
+        let price_res: Option<u128> = if price.is_some() {
+            assert!(
+                price.unwrap() < MAX_PRICE,
+                "Price higher than {}",
+                MAX_PRICE
+            );
+            Some(price.unwrap())
+        } else {
+            None
+        };
+
+        self.token_series_by_id.insert(&token_series_id, &TokenSeries{
+            metadata: token_metadata.clone(),
+            creator_id: caller_id,
+            tokens: UnorderedSet::new(
+                StorageKey::TokensBySeriesInner {
+                    token_series: token_series_id.clone(),
+                }
+                .try_to_vec()
+                .unwrap(),
+            ),
+            price: price_res,
+            is_mintable: true,
+            royalty: royalty_res.clone(),
+            banner: banner.clone(),
+            capacity: capacity.clone(),
+            modality: modality.clone(),
+            status: status.clone(),
+            date: date.clone(),
+            time: time,
+        });
+
+        env::log(
+            json!({
+                "type": "nft_create_series",
+                "params": {
+                    "token_series_id": token_series_id,
+                    "token_metadata": token_metadata,
+                    "creator_id": caller_id,
+                    "price": price,
+                    "royalty": royalty_res
+                }
+            })
+            .to_string()
+            .as_bytes(),
+        );
+
+        refund_deposit(env::storage_usage() - initial_storage_usage, 0);
+
+		TokenSeriesJson{
+            token_series_id,
+			metadata: token_metadata,
+			creator_id: caller_id.into(),
+            royalty: royalty_res,
+            banner: banner,
+            capacity: capacity,
+            modality: modality,
+            status: status,
+            date: date,
+            time: time,
+		}
+    }
+
+    fn _nft_mint_series(
+        &mut self,
+        token_series_id: TokenSeriesId,
+        receiver_id: AccountId
+    ) -> TokenId {
+        let mut token_series = self.token_series_by_id.get(&token_series_id).expect("Token series not exist");
+        assert!(
+            token_series.is_mintable,
+            "Token series is not mintable"
+        );
+
+        let num_tokens = token_series.tokens.len();
+        let max_copies = token_series.metadata.copies.unwrap_or(u64::MAX);
+        let slug = token_series.metadata.title.unwrap();
+        assert!(num_tokens < max_copies, "Series supply maxed");
+
+        if (num_tokens + 1) >= max_copies {
+            token_series.is_mintable = false;
+            token_series.price = None;
+            self.marketplace.remove(&token_series_id);
+        }
+
+        let token_id = format!("{}{}{}", &token_series_id, slug, num_tokens + 1);
+        token_series.tokens.insert(&token_id);
+        self.token_series_by_id.insert(&token_series_id, &token_series);
+        let title: String = format!("{}{}{}{}{}", token_series.metadata.title.unwrap().clone(), TITLE_DELIMETER, &token_series_id, TITLE_DELIMETER, (num_tokens + 1).to_string());
+
+
+        let metadata = TokenMetadata {
+            title: Some(title),
+            description: token_series.metadata.description.clone(),
+            media: token_series.metadata.media.clone(),
+            media_hash: token_series.metadata.media_hash,
+            copies: token_series.metadata.copies,
+            issued_at: Some(env::block_timestamp().to_string()),
+            expires_at: token_series.metadata.expires_at,
+            starts_at: token_series.metadata.starts_at,
+            updated_at: token_series.metadata.updated_at,
+            extra: token_series.metadata.extra.clone(),
+            reference: token_series.metadata.reference.clone(),
+            reference_hash: token_series.metadata.reference_hash,
+        };
+
+        let owner_id: AccountId = receiver_id;
+        self.tokens.owner_by_id.insert(&token_id, &owner_id);
+
+        self.tokens
+            .token_metadata_by_id
+            .as_mut()
+            .and_then(|by_id| by_id.insert(&token_id, &metadata));
+
+         if let Some(tokens_per_owner) = &mut self.tokens.tokens_per_owner {
+             let mut token_ids = tokens_per_owner.get(&owner_id).unwrap_or_else(|| {
+                 UnorderedSet::new(StorageKey::TokensPerOwner {
+                     account_hash: env::sha256(&owner_id.as_bytes()),
+                 })
+             });
+             token_ids.insert(&token_id);
+             tokens_per_owner.insert(&owner_id, &token_ids);
+         };
+
+        token_id
+    }
+
+    fn refund_deposit(storage_used: u64, extra_spend: Balance) {
+        let required_cost = env::storage_byte_cost() * Balance::from(storage_used);
+        let attached_deposit = env::attached_deposit() - extra_spend;
+
+        assert!(
+            required_cost <= attached_deposit,
+            "Must attach {} yoctoNEAR to cover storage",
+            required_cost,
+        );
+
+        let refund = attached_deposit - required_cost;
+        if refund > 1 {
+            Promise::new(env::predecessor_account_id()).transfer(refund);
+        }
+    }
+
 }
 
 near_contract_standards::impl_non_fungible_token_core!(Contract, tokens);
