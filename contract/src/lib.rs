@@ -21,6 +21,7 @@ use std::collections::HashMap;
 pub type TokenSeriesId = String;
 
 const MAX_PRICE: Balance = 1_000_000_000 * 10u128.pow(24);
+pub const TOKEN_DELIMITER: &str = " :";
 pub const TITLE_DELIMETER: &str = " #";
 
 // Objects
@@ -211,10 +212,10 @@ impl Contract {
         banner: String,
     ) -> TokenSeriesJson {
         let initial_storage_usage = env::storage_usage();
-        let caller_id = env::predecessor_account_id();
+        let caller_id = env::signer_account_id();
 
         if creator_id.is_some() {
-            assert_eq!(creator_id.unwrap().to_string(), caller_id, "Caller is not creator_id");
+            assert_eq!(creator_id.unwrap(), caller_id, "Caller is not creator_id");
         }
 
         let token_series_id = format!("{}", (self.token_series_by_id.len() + 1));
@@ -263,7 +264,7 @@ impl Contract {
 
         self.token_series_by_id.insert(&token_series_id, &TokenSeries{
             metadata: token_metadata.clone(),
-            creator_id: caller_id,
+            creator_id: caller_id.clone(),
             tokens: UnorderedSet::new(
                 StorageKey::TokensBySeriesInner {
                     token_series: token_series_id.clone(),
@@ -297,7 +298,7 @@ impl Contract {
             .as_bytes(),
         );
 
-        refund_deposit(env::storage_usage() - initial_storage_usage, 0);
+        // refund_deposit(env::storage_usage() - initial_storage_usage, 0);
 
 		TokenSeriesJson{
             token_series_id,
@@ -326,7 +327,7 @@ impl Contract {
 
         let num_tokens = token_series.tokens.len();
         let max_copies = token_series.metadata.copies.unwrap_or(u64::MAX);
-        let slug = token_series.metadata.title.unwrap();
+
         assert!(num_tokens < max_copies, "Series supply maxed");
 
         if (num_tokens + 1) >= max_copies {
@@ -335,7 +336,7 @@ impl Contract {
             self.marketplace.remove(&token_series_id);
         }
 
-        let token_id = format!("{}{}{}", &token_series_id, slug, num_tokens + 1);
+        let token_id = format!("{}{}{}", &token_series_id, TOKEN_DELIMITER, num_tokens + 1);
         token_series.tokens.insert(&token_id);
         self.token_series_by_id.insert(&token_series_id, &token_series);
         let title: String = format!("{}{}{}{}{}", token_series.metadata.title.unwrap().clone(), TITLE_DELIMETER, &token_series_id, TITLE_DELIMETER, (num_tokens + 1).to_string());
