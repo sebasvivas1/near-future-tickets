@@ -197,7 +197,6 @@ impl Contract {
     }
 
     #[payable]
-    #[payable]
     pub fn nft_create_series(
         &mut self,
         creator_id: Option<AccountId>,
@@ -298,7 +297,7 @@ impl Contract {
             .as_bytes(),
         );
 
-        // refund_deposit(env::storage_usage() - initial_storage_usage, 0);
+        refund_deposit(env::storage_usage() - initial_storage_usage, 0);
 
 		TokenSeriesJson{
             token_series_id,
