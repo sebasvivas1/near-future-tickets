@@ -1,4 +1,4 @@
-use near_sdk::json_types::ValidAccountId;
+//use near_sdk::json_types::ValidAccountId;
 use near_sdk::collections::UnorderedSet;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::serde::Serialize;
@@ -59,12 +59,12 @@ pub struct TokenSeries {
     price: Option<Balance>,
     is_mintable: bool,
     royalty: HashMap<AccountId, u32>,
-    modality: u8,
-    capacity: u32,
-    date: String,
-    time: u64,
-    status: u8,
-    banner: String,
+    // modality: u8,
+    // capacity: u32,
+    // date: String,
+    // time: u64,
+    // status: u8,
+    // banner: String,
 }
 
 #[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
@@ -74,12 +74,12 @@ pub struct TokenSeriesJson {
 	metadata: TokenMetadata,
 	creator_id: AccountId,
     royalty: HashMap<AccountId, u32>,
-    modality: u8,
-    capacity: u32,
-    date: String,
-    time: u64,
-    status: u8,
-    banner: String,
+    // modality: u8,
+    // capacity: u32,
+    // date: String,
+    // time: u64,
+    // status: u8,
+    // banner: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -192,6 +192,7 @@ impl Contract {
         token_id: TokenId,
         token_owner_id: AccountId,
         token_metadata: TokenMetadata,
+        //perpetual_royalties: Option<HashMap<AccountId, u32>>,
     ) -> Token {
         self.tokens.internal_mint(token_id, token_owner_id, Some(token_metadata))
     }
@@ -203,18 +204,18 @@ impl Contract {
         token_metadata: TokenMetadata,
         price: Option<u128>,
         royalty: Option<HashMap<AccountId, u32>>,
-        modality: u8,
-        capacity: u32,
-        date: String,
-        time: u64,
-        status: u8,
-        banner: String,
+        // modality: u8,
+        // capacity: u32,
+        // date: String,
+        // time: u64,
+        // status: u8,
+        // banner: String,
     ) -> TokenSeriesJson {
         let initial_storage_usage = env::storage_usage();
         let caller_id = env::signer_account_id();
 
         if creator_id.is_some() {
-            assert_eq!(creator_id.unwrap(), caller_id, "Caller is not creator_id");
+            assert_eq!(creator_id.unwrap().to_string()/*Check JEPH*/, caller_id, "Caller is not creator_id");
         }
 
         let token_series_id = format!("{}", (self.token_series_by_id.len() + 1));
@@ -274,15 +275,15 @@ impl Contract {
             price: price_res,
             is_mintable: true,
             royalty: royalty_res.clone(),
-            banner: banner.clone(),
-            capacity: capacity.clone(),
-            modality: modality.clone(),
-            status: status.clone(),
-            date: date.clone(),
-            time: time,
+            // banner: banner.clone(),
+            // capacity: capacity.clone(),
+            // modality: modality.clone(),
+            // status: status.clone(),
+            // date: date.clone(),
+            // time: time,
         });
 
-        env::log(
+        env::log_str(
             json!({
                 "type": "nft_create_series",
                 "params": {
@@ -293,8 +294,6 @@ impl Contract {
                     "royalty": royalty_res
                 }
             })
-            .to_string()
-            .as_bytes(),
         );
 
         refund_deposit(env::storage_usage() - initial_storage_usage, 0);
@@ -304,12 +303,12 @@ impl Contract {
 			metadata: token_metadata,
 			creator_id: caller_id.into(),
             royalty: royalty_res,
-            banner: banner,
-            capacity: capacity,
-            modality: modality,
-            status: status,
-            date: date,
-            time: time,
+            // banner: banner,
+            // capacity: capacity,
+            // modality: modality,
+            // status: status,
+            // date: date,
+            // time: time,
 		}
     }
 
@@ -331,8 +330,8 @@ impl Contract {
 
         if (num_tokens + 1) >= max_copies {
             token_series.is_mintable = false;
-            token_series.price = None;
-            self.marketplace.remove(&token_series_id);
+            // token_series.price = None;
+            // self.marketplace.remove(&token_series_id);
         }
 
         let token_id = format!("{}{}{}", &token_series_id, TOKEN_DELIMITER, num_tokens + 1);
@@ -351,6 +350,7 @@ impl Contract {
             expires_at: token_series.metadata.expires_at,
             starts_at: token_series.metadata.starts_at,
             updated_at: token_series.metadata.updated_at,
+            //TODO: Los parametros extra van aquí, pero en JSON String
             extra: token_series.metadata.extra.clone(),
             reference: token_series.metadata.reference.clone(),
             reference_hash: token_series.metadata.reference_hash,
@@ -376,8 +376,9 @@ impl Contract {
 
         token_id
     }
+}
 
-    fn refund_deposit(storage_used: u64, extra_spend: Balance) {
+fn refund_deposit(storage_used: u64, extra_spend: Balance) {
         let required_cost = env::storage_byte_cost() * Balance::from(storage_used);
         let attached_deposit = env::attached_deposit() - extra_spend;
 
@@ -392,8 +393,6 @@ impl Contract {
             Promise::new(env::predecessor_account_id()).transfer(refund);
         }
     }
-
-}
 
 near_contract_standards::impl_non_fungible_token_core!(Contract, tokens);
 near_contract_standards::impl_non_fungible_token_approval!(Contract, tokens);
