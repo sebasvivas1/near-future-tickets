@@ -204,15 +204,28 @@ impl Contract {
         token_metadata: TokenMetadata,
         price: Option<u128>,
         royalty: Option<HashMap<AccountId, u32>>,
-        // modality: u8,
-        // capacity: u32,
-        // date: String,
-        // time: u64,
-        // status: u8,
-        // banner: String,
+        modality: Option<u8>,
+        capacity: Option<u32>,
+        date: Option<String>,
+        time: Option<u64>,
+        status: Option<u8>,
+        banner: Option<String>,
     ) -> TokenSeriesJson {
         let initial_storage_usage = env::storage_usage();
         let caller_id = env::signer_account_id();
+
+
+        let old_metadata = token_metadata;
+
+        let new_metadata = join_token_metadata(
+            old_metadata,
+            modality,
+            capacity,
+            date,
+            time,
+            status,
+            banner,
+        );
 
         if creator_id.is_some() {
             assert_eq!(creator_id.unwrap(), caller_id, "Caller is not creator_id");
@@ -225,7 +238,7 @@ impl Contract {
             "Duplicate token_series_id"
         );
 
-        let title = token_metadata.title.clone();
+        let title = new_metadata.title.clone();
         assert!(title.is_some(), "token_metadata.title is required");
 
 
@@ -251,6 +264,8 @@ impl Contract {
             "Exceeds maximum royalty -> 9000",
         );
 
+
+        //TODO: JEPH - Revisar si usar esta función en lugar de stringify
         let price_res: Option<u128> = if price.is_some() {
             assert!(
                 price.unwrap() < MAX_PRICE,
@@ -263,7 +278,7 @@ impl Contract {
         };
 
         self.token_series_by_id.insert(&token_series_id, &TokenSeries{
-            metadata: token_metadata.clone(),
+            metadata: new_metadata.clone(),
             creator_id: caller_id.clone(),
             tokens: UnorderedSet::new(
                 StorageKey::TokensBySeriesInner {
@@ -284,23 +299,23 @@ impl Contract {
         });
 
         env::log_str(
-            stringify!(json!({
+            stringify!(({
                 "type": "nft_create_series",
                 "params": {
-                    "token_series_id": token_series_id,
-                    "token_metadata": token_metadata,
-                    "creator_id": caller_id,
-                    "price": price,
-                    "royalty": royalty_res
+                    "token_series_id": token_series_id.unwrap(),
+                    "token_metadata": token_metadata.unwrap(),
+                    "creator_id": caller_id.unwrap(),
+                    "price": price.unwrap(),
+                    "royalty": royalty_res.unwrap()
                 }
-            }).to_string())
+            }))
         );
 
         refund_deposit(env::storage_usage() - initial_storage_usage, 0);
 
 		TokenSeriesJson{
             token_series_id,
-			metadata: token_metadata,
+			metadata: new_metadata,
 			creator_id: caller_id.into(),
             royalty: royalty_res,
             // banner: banner,
@@ -392,6 +407,34 @@ fn refund_deposit(storage_used: u64, extra_spend: Balance) {
         if refund > 1 {
             Promise::new(env::predecessor_account_id()).transfer(refund);
         }
+    }
+
+    pub fn join_token_metadata(
+        old_token_metadata: TokenMetadata,
+        modality: Option<u8>,
+        capacity: Option<u32>,
+        date: Option<String>,
+        time: Option<u64>,
+        //location: Option<String>,
+        status: Option<u8>,
+        banner: Option<String>,
+    ) -> TokenMetadata {
+        let mut old = old_token_metadata;
+        //old.extra = old.title;
+        //let mut new_extra = String::from("");
+        let new_struct = json!({
+            "type": "nft_create_series",
+            "params": {
+                "modality": format!("{}", modality.unwrap_or(0)),
+                "capacity": format!("{}", capacity.unwrap_or(1000)),
+                "date": format!("{}", date.unwrap_or("".to_string())),
+                "time": format!("{}", time.unwrap_or(0)),
+                "status": format!("{}", status.unwrap_or(1)),
+                "banner": format!("{}", banner.unwrap_or("".to_string())),
+            }
+        });
+        old.extra = Some(new_struct.to_string());
+        old
     }
 
 near_contract_standards::impl_non_fungible_token_core!(Contract, tokens);
