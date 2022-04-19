@@ -215,7 +215,7 @@ impl Contract {
         let caller_id = env::signer_account_id();
 
         if creator_id.is_some() {
-            assert_eq!(creator_id.unwrap().to_string()/*Check JEPH*/, caller_id, "Caller is not creator_id");
+            assert_eq!(creator_id.unwrap(), caller_id, "Caller is not creator_id");
         }
 
         let token_series_id = format!("{}", (self.token_series_by_id.len() + 1));
@@ -284,7 +284,7 @@ impl Contract {
         });
 
         env::log_str(
-            json!({
+            stringify!(json!({
                 "type": "nft_create_series",
                 "params": {
                     "token_series_id": token_series_id,
@@ -293,7 +293,7 @@ impl Contract {
                     "price": price,
                     "royalty": royalty_res
                 }
-            })
+            }).to_string())
         );
 
         refund_deposit(env::storage_usage() - initial_storage_usage, 0);
