@@ -1,8 +1,12 @@
+//use near_sdk::json_types::ValidAccountId;
+use near_sdk::collections::UnorderedSet;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::serde::Serialize;
-use near_sdk::serde::Deserialize;
+use near_sdk::serde::{Serialize, Deserialize};
 use near_sdk::collections::{UnorderedMap, LazyOption};
-use near_sdk::{ env, near_bindgen, AccountId, Balance, Promise, PanicOnDefault, require, BorshStorageKey, PromiseOrValue};
+use near_sdk::{ env, near_bindgen, AccountId, Balance, Promise, PanicOnDefault, require, BorshStorageKey, PromiseOrValue, serde_json::json};
+use near_sdk::env::is_valid_account_id;
+use serde_json;
+
 
 // NFT Standards
 use near_contract_standards::non_fungible_token::metadata::{
@@ -15,6 +19,11 @@ use near_contract_standards::non_fungible_token::{Token, TokenId};
 // HashMap import
 use std::collections::HashMap;
 
+pub type TokenSeriesId = String;
+
+const MAX_PRICE: Balance = 1_000_000_000 * 10u128.pow(24);
+pub const TOKEN_DELIMITER: &str = " :";
+pub const TITLE_DELIMETER: &str = " #";
 
 // Objects
 #[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
@@ -43,7 +52,72 @@ pub struct Event {
     organizer: AccountId
 }
 
-// Creo que falta algo de ticket ???
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+struct ExtraMetadata {
+    modality: u8,
+    capacity: u32,
+    date: String,
+    time: u64,
+    status: u8,
+    banner: String,
+}
+
+
+
+#[derive(BorshDeserialize, BorshSerialize)]
+pub struct TokenSeries {
+	metadata: TokenMetadata,
+	creator_id: AccountId,
+	tokens: UnorderedSet<TokenId>,
+    price: Option<Balance>,
+    is_mintable: bool,
+    royalty: HashMap<AccountId, u32>,
+    // modality: u8,
+    // capacity: u32,
+    // date: String,
+    // time: u64,
+    // status: u8,
+    // banner: String,
+}
+
+#[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct TokenSeriesJson {
+    token_series_id: TokenSeriesId,
+	metadata: TokenMetadata,
+	creator_id: AccountId,
+    royalty: HashMap<AccountId, u32>,
+    // modality: u8,
+    // capacity: u32,
+    // date: String,
+    // time: u64,
+    // status: u8,
+    // banner: String,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct Market {
+    token_series_id: TokenSeriesId,
+    metadata: TokenMetadata,
+    owner_id: AccountId,
+    creator_id: AccountId,
+    price: Balance,
+    royalty: HashMap<AccountId, u32>,
+    copy: i64,
+}
+
+#[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct MarketJson {
+    token_series_id: TokenSeriesId,
+    metadata: TokenMetadata,
+    owner_id: AccountId,
+    creator_id: AccountId,
+    price: Balance,
+    royalty: HashMap<AccountId, u32>,
+}
 
 // -------- Objects End --------- //
 
@@ -63,6 +137,8 @@ pub struct Contract {
     // NFT (Ticket)
     tokens: NonFungibleToken,
     metadata: LazyOption<NFTContractMetadata>,
+    token_series_by_id: UnorderedMap<TokenSeriesId, TokenSeries>,
+    marketplace: UnorderedMap<TokenSeriesId, MarketJson>
 }
 
 impl Default for NEARFT {
@@ -81,6 +157,9 @@ enum StorageKey {
     TokenMetadata,
     Enumeration,
     Approval,
+    TokenSeriesById,
+    TokensBySeriesInner { token_series: String },
+    TokensPerOwner { account_hash: Vec<u8>},
 }
 
 const DATA_IMAGE_SVG_NEAR_ICON: &str = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 288 288'%3E%3Cg id='l' data-name='l'%3E%3Cpath d='M187.58,79.81l-30.1,44.69a3.2,3.2,0,0,0,4.75,4.2L191.86,103a1.2,1.2,0,0,1,2,.91v80.46a1.2,1.2,0,0,1-2.12.77L102.18,77.93A15.35,15.35,0,0,0,90.47,72.5H87.34A15.34,15.34,0,0,0,72,87.84V201.16A15.34,15.34,0,0,0,87.34,216.5h0a15.35,15.35,0,0,0,13.08-7.31l30.1-44.69a3.2,3.2,0,0,0-4.75-4.2L96.14,186a1.2,1.2,0,0,1-2-.91V104.61a1.2,1.2,0,0,1,2.12-.77l89.55,107.23a15.35,15.35,0,0,0,11.71,5.43h3.13A15.34,15.34,0,0,0,216,201.16V87.84A15.34,15.34,0,0,0,200.66,72.5h0A15.35,15.35,0,0,0,187.58,79.81Z'/%3E%3C/g%3E%3C/svg%3E";
@@ -94,7 +173,7 @@ impl Contract {
             NFTContractMetadata {
                 spec: NFT_METADATA_SPEC.to_string(),
                 name: "near-future-tickets".to_string(),
-                symbol: "NFT".to_string(),
+                symbol: "NEAR Future Ticket".to_string(),
                 icon: Some(DATA_IMAGE_SVG_NEAR_ICON.to_string()),
                 base_uri: None,
                 reference: None,
@@ -116,6 +195,8 @@ impl Contract {
                 Some(StorageKey::Approval),
             ),
             metadata: LazyOption::new(StorageKey::Metadata, Some(&metadata)),
+            token_series_by_id: UnorderedMap::new(StorageKey::TokenSeriesById),
+            marketplace: UnorderedMap::new(b"0".to_vec()),
         }
     }
 
@@ -125,10 +206,286 @@ impl Contract {
         token_id: TokenId,
         token_owner_id: AccountId,
         token_metadata: TokenMetadata,
+        //perpetual_royalties: Option<HashMap<AccountId, u32>>,
     ) -> Token {
         self.tokens.internal_mint(token_id, token_owner_id, Some(token_metadata))
     }
+
+    #[payable]
+    pub fn nft_create_series(
+        &mut self,
+        creator_id: Option<AccountId>,
+        token_metadata: TokenMetadata,
+        price: Option<u128>,
+        royalty: Option<HashMap<AccountId, u32>>,
+        modality: Option<u8>,
+        capacity: Option<u32>,
+        date: Option<String>,
+        time: Option<u64>,
+        status: Option<u8>,
+        banner: Option<String>,
+    ) -> TokenSeriesJson {
+        let initial_storage_usage = env::storage_usage();
+        let caller_id = env::signer_account_id();
+
+        
+        let mut old_metadata = token_metadata;
+
+         //let new_metadata = join_token_metadata(
+        //     old_metadata,
+        //     modality,
+        //     capacity,
+        //     date,
+        //     time,
+        //     status,
+        //     banner,
+        // );
+
+        // let mut extra_data = object!{
+        //     capacity: capacity,
+        //     modality: modality,
+        // };
+
+        // let mut extra_metadata: HashMap<String, String> = HashMap::new();
+        // extra_metadata.insert(String::from("modality"), modality.unwrap_or(1).to_string());
+
+        let mut example = ExtraMetadata {
+            modality: 1,
+            capacity: 100,
+            date: "01-01-1990".to_string(),
+            time: 100,
+            status: 1,
+            banner: "".to_string(),
+        };
+
+
+        // let mut extra_data_string = serde_json::to_string(&burrito_data).unwrap();
+        //         extra_data_string = str::replace(&extra_data_string, "\"", "'");
+        //         new_burrito.extra = Some(extra_data_string);
+        //         new_burrito.media = Some(burrito_image);
+        //         let name_burrito = "Burrito ".to_string()+&burrito_type.to_string()+&" #".to_string()+&self.token_metadata_by_id.len().to_string();
+                // let desription_burrito = "Este es un burrito de tipo ".to_string()+&burrito_type.to_string();
+
+                
+        example.modality = modality.unwrap();
+        example.capacity = capacity.unwrap();
+        example.date = date.unwrap();
+        example.time = time.unwrap();
+        example.status = status.unwrap();
+        example.banner = banner.unwrap();
+        let mut este_si_funciona = serde_json::to_string(&example).unwrap();
+        este_si_funciona = str::replace(&este_si_funciona, "\"", "'");
+        old_metadata.extra = Some(este_si_funciona);
+
+        if creator_id.is_some() {
+            assert_eq!(creator_id.unwrap(), caller_id, "Caller is not creator_id");
+        }
+
+        let token_series_id = format!("{}", (self.token_series_by_id.len() + 1));
+
+        assert!(
+            self.token_series_by_id.get(&token_series_id).is_none(),
+            "Duplicate token_series_id"
+        );
+
+        let title = old_metadata.title.clone();
+        assert!(title.is_some(), "token_metadata.title is required");
+
+
+        let mut total_perpetual = 0;
+        let mut total_accounts = 0;
+        let royalty_res: HashMap<AccountId, u32> = if let Some(royalty) = royalty {
+            for (k , v) in royalty.iter() {
+                if !is_valid_account_id(k.as_bytes()) {
+                    env::panic_str("Not valid account_id for royalty");
+                };
+                total_perpetual += *v;
+                total_accounts += 1;
+            }
+            royalty
+        } else {
+            HashMap::new()
+        };
+
+        assert!(total_accounts <= 10, "Royalty exceeds 10 accounts");
+
+        assert!(
+            total_perpetual <= 9000,
+            "Exceeds maximum royalty -> 9000",
+        );
+
+
+        //TODO: JEPH - Revisar si usar esta función en lugar de stringify
+        let price_res: Option<u128> = if price.is_some() {
+            assert!(
+                price.unwrap() < MAX_PRICE,
+                "Price higher than {}",
+                MAX_PRICE
+            );
+            Some(price.unwrap())
+        } else {
+            None
+        };
+
+        self.token_series_by_id.insert(&token_series_id, &TokenSeries{
+            metadata: old_metadata.clone(),
+            creator_id: caller_id.clone(),
+            tokens: UnorderedSet::new(
+                StorageKey::TokensBySeriesInner {
+                    token_series: token_series_id.clone(),
+                }
+                .try_to_vec()
+                .unwrap(),
+            ),
+            price: price_res,
+            is_mintable: true,
+            royalty: royalty_res.clone(),
+            // banner: banner.clone(),
+            // capacity: capacity.clone(),
+            // modality: modality.clone(),
+            // status: status.clone(),
+            // date: date.clone(),
+            // time: time,
+        });
+
+        env::log_str(
+            stringify!(({
+                "type": "nft_create_series",
+                "params": {
+                    "token_series_id": token_series_id.unwrap(),
+                    "token_metadata": token_metadata.unwrap(),
+                    "creator_id": caller_id.unwrap(),
+                    "price": price.unwrap(),
+                    "royalty": royalty_res.unwrap()
+                }
+            }))
+        );
+
+        refund_deposit(env::storage_usage() - initial_storage_usage, 0);
+
+		TokenSeriesJson{
+            token_series_id,
+			metadata: old_metadata.clone(),
+			creator_id: caller_id.into(),
+            royalty: royalty_res,
+            // banner: banner,
+            // capacity: capacity,
+            // modality: modality,
+            // status: status,
+            // date: date,
+            // time: time,
+		}
+    }
+
+    fn _nft_mint_series(
+        &mut self,
+        token_series_id: TokenSeriesId,
+        receiver_id: AccountId
+    ) -> TokenId {
+        let mut token_series = self.token_series_by_id.get(&token_series_id).expect("Token series not exist");
+        assert!(
+            token_series.is_mintable,
+            "Token series is not mintable"
+        );
+
+        let num_tokens = token_series.tokens.len();
+        let max_copies = token_series.metadata.copies.unwrap_or(u64::MAX);
+
+        assert!(num_tokens < max_copies, "Series supply maxed");
+
+        if (num_tokens + 1) >= max_copies {
+            token_series.is_mintable = false;
+            // token_series.price = None;
+            // self.marketplace.remove(&token_series_id);
+        }
+
+        let token_id = format!("{}{}{}", &token_series_id, TOKEN_DELIMITER, num_tokens + 1);
+        token_series.tokens.insert(&token_id);
+        self.token_series_by_id.insert(&token_series_id, &token_series);
+        let title: String = format!("{}{}{}{}{}", token_series.metadata.title.unwrap().clone(), TITLE_DELIMETER, &token_series_id, TITLE_DELIMETER, (num_tokens + 1).to_string());
+
+
+        let metadata = TokenMetadata {
+            title: Some(title),
+            description: token_series.metadata.description.clone(),
+            media: token_series.metadata.media.clone(),
+            media_hash: token_series.metadata.media_hash,
+            copies: token_series.metadata.copies,
+            issued_at: Some(env::block_timestamp().to_string()),
+            expires_at: token_series.metadata.expires_at,
+            starts_at: token_series.metadata.starts_at,
+            updated_at: token_series.metadata.updated_at,
+            //TODO: Los parametros extra van aquí, pero en JSON String
+            extra: token_series.metadata.extra.clone(),
+            reference: token_series.metadata.reference.clone(),
+            reference_hash: token_series.metadata.reference_hash,
+        };
+
+        let owner_id: AccountId = receiver_id;
+        self.tokens.owner_by_id.insert(&token_id, &owner_id);
+
+        self.tokens
+            .token_metadata_by_id
+            .as_mut()
+            .and_then(|by_id| by_id.insert(&token_id, &metadata));
+
+         if let Some(tokens_per_owner) = &mut self.tokens.tokens_per_owner {
+             let mut token_ids = tokens_per_owner.get(&owner_id).unwrap_or_else(|| {
+                 UnorderedSet::new(StorageKey::TokensPerOwner {
+                     account_hash: env::sha256(&owner_id.as_bytes()),
+                 })
+             });
+             token_ids.insert(&token_id);
+             tokens_per_owner.insert(&owner_id, &token_ids);
+         };
+
+        token_id
+    }
 }
+
+fn refund_deposit(storage_used: u64, extra_spend: Balance) {
+        let required_cost = env::storage_byte_cost() * Balance::from(storage_used);
+        let attached_deposit = env::attached_deposit() - extra_spend;
+
+        assert!(
+            required_cost <= attached_deposit,
+            "Must attach {} yoctoNEAR to cover storage",
+            required_cost,
+        );
+
+        let refund = attached_deposit - required_cost;
+        if refund > 1 {
+            Promise::new(env::predecessor_account_id()).transfer(refund);
+        }
+    }
+
+    pub fn join_token_metadata(
+        old_token_metadata: TokenMetadata,
+        modality: Option<u8>,
+        capacity: Option<u32>,
+        date: Option<String>,
+        time: Option<u64>,
+        //location: Option<String>,
+        status: Option<u8>,
+        banner: Option<String>,
+    ) -> TokenMetadata {
+        let mut old = old_token_metadata;
+        //old.extra = old.title;
+        //let mut new_extra = String::from("");
+        let new_struct = json!({
+            "type": "nft_create_series",
+            "params": {
+                "modality": format!("{}", modality.unwrap_or(0)),
+                "capacity": format!("{}", capacity.unwrap_or(1000)),
+                "date": format!("{}", date.unwrap_or("".to_string())),
+                "time": format!("{}", time.unwrap_or(0)),
+                "status": format!("{}", status.unwrap_or(1)),
+                "banner": format!("{}", banner.unwrap_or("".to_string())),
+            }
+        });
+        old.extra = Some(new_struct.to_string());
+        old
+    }
 
 near_contract_standards::impl_non_fungible_token_core!(Contract, tokens);
 near_contract_standards::impl_non_fungible_token_approval!(Contract, tokens);
