@@ -1,11 +1,12 @@
 //use near_sdk::json_types::ValidAccountId;
 use near_sdk::collections::UnorderedSet;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::serde::Serialize;
-use near_sdk::serde::Deserialize;
+use near_sdk::serde::{Serialize, Deserialize};
 use near_sdk::collections::{UnorderedMap, LazyOption};
 use near_sdk::{ env, near_bindgen, AccountId, Balance, Promise, PanicOnDefault, require, BorshStorageKey, PromiseOrValue, serde_json::json};
 use near_sdk::env::is_valid_account_id;
+use serde_json;
+
 
 // NFT Standards
 use near_contract_standards::non_fungible_token::metadata::{
@@ -50,6 +51,19 @@ pub struct Event {
     banner: String,
     organizer: AccountId
 }
+
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+struct ExtraMetadata {
+    modality: u8,
+    capacity: u32,
+    date: String,
+    time: u64,
+    status: u8,
+    banner: String,
+}
+
+
 
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct TokenSeries {
@@ -214,18 +228,54 @@ impl Contract {
         let initial_storage_usage = env::storage_usage();
         let caller_id = env::signer_account_id();
 
+        
+        let mut old_metadata = token_metadata;
 
-        let old_metadata = token_metadata;
+         //let new_metadata = join_token_metadata(
+        //     old_metadata,
+        //     modality,
+        //     capacity,
+        //     date,
+        //     time,
+        //     status,
+        //     banner,
+        // );
 
-        let new_metadata = join_token_metadata(
-            old_metadata,
-            modality,
-            capacity,
-            date,
-            time,
-            status,
-            banner,
-        );
+        // let mut extra_data = object!{
+        //     capacity: capacity,
+        //     modality: modality,
+        // };
+
+        // let mut extra_metadata: HashMap<String, String> = HashMap::new();
+        // extra_metadata.insert(String::from("modality"), modality.unwrap_or(1).to_string());
+
+        let mut example = ExtraMetadata {
+            modality: 1,
+            capacity: 100,
+            date: "01-01-1990".to_string(),
+            time: 100,
+            status: 1,
+            banner: "".to_string(),
+        };
+
+
+        // let mut extra_data_string = serde_json::to_string(&burrito_data).unwrap();
+        //         extra_data_string = str::replace(&extra_data_string, "\"", "'");
+        //         new_burrito.extra = Some(extra_data_string);
+        //         new_burrito.media = Some(burrito_image);
+        //         let name_burrito = "Burrito ".to_string()+&burrito_type.to_string()+&" #".to_string()+&self.token_metadata_by_id.len().to_string();
+                // let desription_burrito = "Este es un burrito de tipo ".to_string()+&burrito_type.to_string();
+
+                
+        example.modality = modality.unwrap();
+        example.capacity = capacity.unwrap();
+        example.date = date.unwrap();
+        example.time = time.unwrap();
+        example.status = status.unwrap();
+        example.banner = banner.unwrap();
+        let mut este_si_funciona = serde_json::to_string(&example).unwrap();
+        este_si_funciona = str::replace(&este_si_funciona, "\"", "'");
+        old_metadata.extra = Some(este_si_funciona);
 
         if creator_id.is_some() {
             assert_eq!(creator_id.unwrap(), caller_id, "Caller is not creator_id");
@@ -238,7 +288,7 @@ impl Contract {
             "Duplicate token_series_id"
         );
 
-        let title = new_metadata.title.clone();
+        let title = old_metadata.title.clone();
         assert!(title.is_some(), "token_metadata.title is required");
 
 
@@ -278,7 +328,7 @@ impl Contract {
         };
 
         self.token_series_by_id.insert(&token_series_id, &TokenSeries{
-            metadata: new_metadata.clone(),
+            metadata: old_metadata.clone(),
             creator_id: caller_id.clone(),
             tokens: UnorderedSet::new(
                 StorageKey::TokensBySeriesInner {
@@ -315,7 +365,7 @@ impl Contract {
 
 		TokenSeriesJson{
             token_series_id,
-			metadata: new_metadata,
+			metadata: old_metadata.clone(),
 			creator_id: caller_id.into(),
             royalty: royalty_res,
             // banner: banner,
