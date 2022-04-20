@@ -7,6 +7,8 @@ export default function index() {
     <div className="min-h-screen min-w-screen bg-figma-200">
       <Layout>
         <Landing />
+        <Landing />
+        <Landing />
       </Layout>
     </div>
   );

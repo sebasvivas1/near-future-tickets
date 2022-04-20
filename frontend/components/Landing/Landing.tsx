@@ -4,7 +4,7 @@ import { ReactTypical } from '@deadcoder0904/react-typical';
 export default function Landing() {
   return (
     <div className="">
-      <div className="absolute left-14 top-40 lg:left-80 lg:bottom-36">
+      <div className="absolute left-24 top-40 lg:left-80 lg:bottom-36">
         <img src="/ticket.png" alt="" className="w-64 lg:w-auto" />
       </div>
       <div className="mt-28 text-center lg:mt-52 relative z-50">
