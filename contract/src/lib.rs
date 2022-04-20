@@ -73,12 +73,12 @@ pub struct TokenSeries {
     price: Option<Balance>,
     is_mintable: bool,
     royalty: HashMap<AccountId, u32>,
-    // modality: u8,
-    // capacity: u32,
-    // date: String,
-    // time: u64,
-    // status: u8,
-    // banner: String,
+    modality: u8,
+    capacity: u32,
+    date: String,
+    time: u64,
+    status: u8,
+    banner: String,
 }
 
 #[derive(Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
@@ -88,12 +88,12 @@ pub struct TokenSeriesJson {
 	metadata: TokenMetadata,
 	creator_id: AccountId,
     royalty: HashMap<AccountId, u32>,
-    // modality: u8,
-    // capacity: u32,
-    // date: String,
-    // time: u64,
-    // status: u8,
-    // banner: String,
+    modality: u8,
+    capacity: u32,
+    date: String,
+    time: u64,
+    status: u8,
+    banner: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -212,7 +212,7 @@ impl Contract {
     }
 
     #[payable]
-    pub fn nft_create_series(
+    pub fn new_event(
         &mut self,
         creator_id: Option<AccountId>,
         token_metadata: TokenMetadata,
@@ -229,27 +229,9 @@ impl Contract {
         let caller_id = env::signer_account_id();
 
         
-        let mut old_metadata = token_metadata;
+        let mut event_metadata = token_metadata;
 
-         //let new_metadata = join_token_metadata(
-        //     old_metadata,
-        //     modality,
-        //     capacity,
-        //     date,
-        //     time,
-        //     status,
-        //     banner,
-        // );
-
-        // let mut extra_data = object!{
-        //     capacity: capacity,
-        //     modality: modality,
-        // };
-
-        // let mut extra_metadata: HashMap<String, String> = HashMap::new();
-        // extra_metadata.insert(String::from("modality"), modality.unwrap_or(1).to_string());
-
-        let mut example = ExtraMetadata {
+        let mut extra_event_metadata = ExtraMetadata {
             modality: 1,
             capacity: 100,
             date: "01-01-1990".to_string(),
@@ -257,25 +239,17 @@ impl Contract {
             status: 1,
             banner: "".to_string(),
         };
-
-
-        // let mut extra_data_string = serde_json::to_string(&burrito_data).unwrap();
-        //         extra_data_string = str::replace(&extra_data_string, "\"", "'");
-        //         new_burrito.extra = Some(extra_data_string);
-        //         new_burrito.media = Some(burrito_image);
-        //         let name_burrito = "Burrito ".to_string()+&burrito_type.to_string()+&" #".to_string()+&self.token_metadata_by_id.len().to_string();
-                // let desription_burrito = "Este es un burrito de tipo ".to_string()+&burrito_type.to_string();
-
-                
-        example.modality = modality.unwrap();
-        example.capacity = capacity.unwrap();
-        example.date = date.unwrap();
-        example.time = time.unwrap();
-        example.status = status.unwrap();
-        example.banner = banner.unwrap();
-        let mut este_si_funciona = serde_json::to_string(&example).unwrap();
-        este_si_funciona = str::replace(&este_si_funciona, "\"", "'");
-        old_metadata.extra = Some(este_si_funciona);
+           
+        extra_event_metadata.modality = modality.unwrap();
+        extra_event_metadata.capacity = capacity.unwrap();
+        extra_event_metadata.date = date.unwrap();
+        extra_event_metadata.time = time.unwrap();
+        extra_event_metadata.status = status.unwrap();
+        extra_event_metadata.banner = banner.unwrap();
+        let mut new_event = serde_json::to_string(&extra_event_metadata).unwrap();
+        new_event = str::replace(&new_event, "\"", "'");
+        event_metadata.extra = Some(new_event);
+        event_metadata.copies = Some(extra_event_metadata.capacity.into());
 
         if creator_id.is_some() {
             assert_eq!(creator_id.unwrap(), caller_id, "Caller is not creator_id");
@@ -288,7 +262,7 @@ impl Contract {
             "Duplicate token_series_id"
         );
 
-        let title = old_metadata.title.clone();
+        let title = event_metadata.title.clone();
         assert!(title.is_some(), "token_metadata.title is required");
 
 
@@ -328,7 +302,7 @@ impl Contract {
         };
 
         self.token_series_by_id.insert(&token_series_id, &TokenSeries{
-            metadata: old_metadata.clone(),
+            metadata: event_metadata.clone(),
             creator_id: caller_id.clone(),
             tokens: UnorderedSet::new(
                 StorageKey::TokensBySeriesInner {
@@ -340,12 +314,12 @@ impl Contract {
             price: price_res,
             is_mintable: true,
             royalty: royalty_res.clone(),
-            // banner: banner.clone(),
-            // capacity: capacity.clone(),
-            // modality: modality.clone(),
-            // status: status.clone(),
-            // date: date.clone(),
-            // time: time,
+            banner: extra_event_metadata.banner.clone(),
+            capacity: capacity.unwrap().clone(),
+            modality: modality.unwrap().clone(),
+            status: status.unwrap().clone(),
+            date: extra_event_metadata.date.clone(),
+            time: time.unwrap().clone(),
         });
 
         env::log_str(
@@ -365,19 +339,64 @@ impl Contract {
 
 		TokenSeriesJson{
             token_series_id,
-			metadata: old_metadata.clone(),
+			metadata: event_metadata.clone(),
 			creator_id: caller_id.into(),
             royalty: royalty_res,
-            // banner: banner,
-            // capacity: capacity,
-            // modality: modality,
-            // status: status,
-            // date: date,
-            // time: time,
+            banner: extra_event_metadata.banner.clone(),
+            capacity: capacity.unwrap().clone(),
+            modality: modality.unwrap().clone(),
+            status: status.unwrap().clone(),
+            date: extra_event_metadata.date.clone(),
+            time: time.unwrap().clone(),
 		}
     }
 
-    fn _nft_mint_series(
+    pub fn get_events_series(&self, from_index: Option<u128>, limit: Option<u64>) -> Vec<TokenSeriesJson> {
+        let start_index: u128 = from_index.map(From::from).unwrap_or_default();
+        assert!(
+            (self.token_series_by_id.len() as u128) > start_index,
+            "Out of bounds, please use a smaller from_index."
+        );
+        let limit = limit.map(|v| v as usize).unwrap_or(usize::MAX);
+        assert_ne!(limit, 0, "Cannot provide limit of 0.");
+
+        self.token_series_by_id
+            .iter()
+            .skip(start_index as usize)
+            .take(limit)
+            .map(|(token_series_id, token_series)| TokenSeriesJson{
+                token_series_id,
+                metadata: token_series.metadata,
+                creator_id: token_series.creator_id,
+                royalty: token_series.royalty,
+                banner: token_series.banner,
+                capacity: token_series.capacity,
+                modality: token_series.modality,
+                date: token_series.date,
+                time: token_series.time,
+                status: token_series.status,
+            })
+            .collect()
+    }
+
+    #[payable]
+    pub fn mint_event_ticket(
+        &mut self, 
+        token_series_id: TokenSeriesId, 
+        receiver_id: AccountId
+    ) -> TokenId {
+        let initial_storage_usage = env::storage_usage();
+
+        let token_series = self.token_series_by_id.get(&token_series_id).expect("Token series not exist");
+        assert_eq!(env::predecessor_account_id(), token_series.creator_id, "not creator");
+        let token_id: TokenId = self._mint_event_ticket(token_series_id, receiver_id);
+
+        refund_deposit(env::storage_usage() - initial_storage_usage, 0);
+
+        token_id
+    }
+
+    fn _mint_event_ticket(
         &mut self,
         token_series_id: TokenSeriesId,
         receiver_id: AccountId
@@ -395,8 +414,6 @@ impl Contract {
 
         if (num_tokens + 1) >= max_copies {
             token_series.is_mintable = false;
-            // token_series.price = None;
-            // self.marketplace.remove(&token_series_id);
         }
 
         let token_id = format!("{}{}{}", &token_series_id, TOKEN_DELIMITER, num_tokens + 1);
@@ -457,34 +474,6 @@ fn refund_deposit(storage_used: u64, extra_spend: Balance) {
         if refund > 1 {
             Promise::new(env::predecessor_account_id()).transfer(refund);
         }
-    }
-
-    pub fn join_token_metadata(
-        old_token_metadata: TokenMetadata,
-        modality: Option<u8>,
-        capacity: Option<u32>,
-        date: Option<String>,
-        time: Option<u64>,
-        //location: Option<String>,
-        status: Option<u8>,
-        banner: Option<String>,
-    ) -> TokenMetadata {
-        let mut old = old_token_metadata;
-        //old.extra = old.title;
-        //let mut new_extra = String::from("");
-        let new_struct = json!({
-            "type": "nft_create_series",
-            "params": {
-                "modality": format!("{}", modality.unwrap_or(0)),
-                "capacity": format!("{}", capacity.unwrap_or(1000)),
-                "date": format!("{}", date.unwrap_or("".to_string())),
-                "time": format!("{}", time.unwrap_or(0)),
-                "status": format!("{}", status.unwrap_or(1)),
-                "banner": format!("{}", banner.unwrap_or("".to_string())),
-            }
-        });
-        old.extra = Some(new_struct.to_string());
-        old
     }
 
 near_contract_standards::impl_non_fungible_token_core!(Contract, tokens);
