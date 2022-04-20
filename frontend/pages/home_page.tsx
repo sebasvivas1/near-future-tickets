@@ -8,6 +8,5 @@ export default function home() {
     <HomePage></HomePage>
     </Layout>   
     </div>
-      
   );
 }
