@@ -3,10 +3,7 @@ use crate::non_fungible_token::token::Token;
 use crate::non_fungible_token::NonFungibleToken;
 use near_sdk::json_types::U128;
 use near_sdk::{env, require, AccountId};
-
-type TokenId = String;
-
-impl NonFungibleToken {
+timpl NonFungibleToken {
     /// Helper function used by a enumerations methods
     /// Note: this method is not exposed publicly to end users
     fn enum_get_token(&self, owner_id: AccountId, token_id: TokenId) -> Token {
