@@ -1,12 +1,12 @@
 /// Common implementation of the [approval management standard](https://nomicon.io/Standards/NonFungibleToken/ApprovalManagement.html) for NFTs.
 /// on the contract/account that has just been approved. This is not required to implement.
-use crate::non_fungible_token::approval::NonFungibleTokenApproval;
-use crate::non_fungible_token::token::TokenId;
-use crate::non_fungible_token::utils::{
-    assert_at_least_one_yocto, bytes_for_approved_account_id, refund_approved_account_ids,
+use near_contract_standards::non_fungible_token::approval::NonFungibleTokenApproval;
+use near_contract_standards::non_fungible_token::{
+    bytes_for_approved_account_id, refund_approved_account_ids,
     refund_approved_account_ids_iter, refund_deposit,
 };
-use crate::non_fungible_token::NonFungibleToken;
+use near_contract_standards::non_fungible_token::TokenId;
+use near_contract_standards::non_fungible_token::NonFungibleToken;
 use near_sdk::{assert_one_yocto, env, ext_contract, require, AccountId, Balance, Gas, Promise};
 
 const GAS_FOR_NFT_APPROVE: Gas = Gas(10_000_000_000_000);
@@ -38,7 +38,7 @@ impl NonFungibleTokenApproval for NonFungibleToken {
         account_id: AccountId,
         msg: Option<String>,
     ) -> Option<Promise> {
-        assert_at_least_one_yocto();
+        assert_one_yocto();
         let approvals_by_id = self
             .approvals_by_id
             .as_mut()
