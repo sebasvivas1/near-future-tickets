@@ -3,18 +3,18 @@ use near_sdk::{CryptoHash};
 use std::mem::size_of;
 
 //convert the royalty percentage and amount to pay into a payout (U128)
-pub fn royalty_to_payout(royalty_percentage: u32, amount_to_pay: Balance) -> U128 {
+pub(crate) fn royalty_to_payout(royalty_percentage: u32, amount_to_pay: Balance) -> U128 {
     U128(royalty_percentage as u128 * amount_to_pay / 10_000u128)
 }
 
 //calculate how many bytes the account ID is taking up
-pub fn bytes_for_approved_account_id(account_id: &AccountId) -> u64 {
+pub(crate) fn bytes_for_approved_account_id(account_id: &AccountId) -> u64 {
     // The extra 4 bytes are coming from Borsh serialization to store the length of the string.
     account_id.as_str().len() as u64 + 4 + size_of::<u64>() as u64
 }
 
 //refund the storage taken up by passed in approved account IDs and send the funds to the passed in account ID. 
-pub fn refund_approved_account_ids_iter<'a, I>(
+pub(crate) fn refund_approved_account_ids_iter<'a, I>(
     account_id: AccountId,
     approved_account_ids: I, //the approved account IDs must be passed in as an iterator
 ) -> Promise
@@ -28,7 +28,7 @@ where
 }
 
 //refund a map of approved account IDs and send the funds to the passed in account ID
-pub fn refund_approved_account_ids(
+pub(crate) fn refund_approved_account_ids(
     account_id: AccountId,
     approved_account_ids: &HashMap<AccountId, u64>,
 ) -> Promise {
@@ -37,7 +37,7 @@ pub fn refund_approved_account_ids(
 }
 
 //used to generate a unique prefix in our storage collections (this is to avoid data collisions)
-pub fn hash_account_id(account_id: &AccountId) -> CryptoHash {
+pub(crate) fn hash_account_id(account_id: &AccountId) -> CryptoHash {
     //get the default hash
     let mut hash = CryptoHash::default();
     //we hash the account ID and return it
@@ -46,7 +46,7 @@ pub fn hash_account_id(account_id: &AccountId) -> CryptoHash {
 }
 
 //used to make sure the user attached exactly 1 yoctoNEAR
-pub fn assert_one_yocto() {
+pub(crate) fn assert_one_yocto() {
     assert_eq!(
         env::attached_deposit(),
         1,
@@ -55,7 +55,7 @@ pub fn assert_one_yocto() {
 }
 
 //Assert that the user has attached at least 1 yoctoNEAR (for security reasons and to pay for storage)
-pub fn assert_at_least_one_yocto() {
+pub(crate) fn assert_at_least_one_yocto() {
     assert!(
         env::attached_deposit() >= 1,
         "Requires attached deposit of at least 1 yoctoNEAR",
@@ -63,7 +63,7 @@ pub fn assert_at_least_one_yocto() {
 }
 
 //refund the initial deposit based on the amount of storage that was used up
-pub fn refund_deposit(storage_used: u64) {
+pub(crate) fn refund_deposit(storage_used: u64) {
     //get how much it would cost to store the information
     let required_cost = env::storage_byte_cost() * Balance::from(storage_used);
     //get the attached deposit
@@ -87,7 +87,7 @@ pub fn refund_deposit(storage_used: u64) {
 
 impl Contract {
     //add a token to the set of tokens an owner has
-    pub fn internal_add_token_to_owner(
+    pub(crate) fn internal_add_token_to_owner(
         &mut self,
         account_id: &AccountId,
         token_id: &TokenId,
@@ -113,7 +113,7 @@ impl Contract {
     }
 
     //remove a token from an owner (internal method and can't be called directly via CLI).
-    pub fn internal_remove_token_from_owner(
+    pub(crate) fn internal_remove_token_from_owner(
         &mut self,
         account_id: &AccountId,
         token_id: &TokenId,
@@ -138,7 +138,7 @@ impl Contract {
     }
 
     //transfers the NFT to the receiver_id (internal method and can't be called directly via CLI).
-    pub fn internal_transfer(
+    pub(crate) fn internal_transfer(
         &mut self,
         sender_id: &AccountId,
         receiver_id: &AccountId,

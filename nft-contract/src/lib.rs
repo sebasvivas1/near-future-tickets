@@ -1,33 +1,40 @@
-use near_contract_standards::non_fungible_token::NonFungibleToken;
-use near_contract_standards::non_fungible_token::Token;
-use near_contract_standards::non_fungible_token::TokenId;
+use near_contract_standards::non_fungible_token::{ NonFungibleToken };
 use std::collections::HashMap;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LazyOption, LookupMap, UnorderedMap, UnorderedSet};
 use near_sdk::json_types::{Base64VecU8, U128, U64};
-use near_sdk::serde::{Serialize, Deserialize};
-use near_sdk::{ require,
-    BorshStorageKey, env, near_bindgen, AccountId, Balance, CryptoHash, PanicOnDefault, Promise,
+use near_sdk::serde::{Deserialize, Serialize};
+use near_sdk::{
+    env, near_bindgen, AccountId, Balance, CryptoHash, PanicOnDefault, Promise, PromiseOrValue, BorshStorageKey, require,
 };
+use metadata::{ NFTContractMetadata, TokenMetadata };
 
-
-// NFT Standards
-use near_contract_standards::non_fungible_token::metadata::{
-    NFTContractMetadata, NonFungibleTokenMetadataProvider, TokenMetadata, NFT_METADATA_SPEC,
-};
-// use crate::internal::*;
+use crate::internal::*;
 pub use crate::metadata::*;
-// pub use crate::mint::*;
-// pub use crate::approval::*;
-// pub use crate::events::*;
+pub use crate::mint::*;
+pub use crate::nft_core::*;
+pub use crate::approval::*;
+pub use crate::royalty::*;
+pub use crate::events::*;
 
-// mod internal;
+mod internal;
+mod approval;
+mod enumeration;
 mod metadata;
-// mod mint;
-// mod approval; 
-// mod events;
+mod mint;
+mod nft_core;
+mod royalty;
+mod events;
 
+// Used to delimit Event Title + Ticket Category (eg: Concert - VIP)
 pub const TITLE_DELIMETER: &str = " - ";
+
+/// This spec can be treated like a version of the standard.
+pub const NFT_METADATA_SPEC: &str = "1.0.0";
+/// This is the name of the NFT standard we're using
+pub const NFT_STANDARD_NAME: &str = "nep171";
+
+pub type TokenSeriesId = String;
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -44,7 +51,6 @@ pub struct Event {
     organizer: AccountId,
     ticket_type: Vec<String>,
     tickets: Vec<TokenSeriesJson>,
-    ticket_banners: Vec<String>,
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
@@ -60,6 +66,7 @@ pub struct TokenSeries {
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct TokenSeriesJson {
+    token_series_id: TokenSeriesId,
 	metadata: TokenMetadata,
 	creator_id: AccountId,
     is_mintable: bool,
@@ -87,10 +94,13 @@ pub struct Contract {
 
     // List of created events
     pub events: UnorderedMap<i128, Event>,
+
+    // Stores all created Tickets
+    token_series_by_id: UnorderedMap<TokenSeriesId, TokenSeries>,
 }
 
 /// Helper structure for keys of the persistent collections.
-#[derive(BorshStorageKey, BorshSerialize)]
+#[derive(BorshSerialize, BorshStorageKey)]
 pub enum StorageKey {
     TokensPerOwner,
     TokenPerOwnerInner { account_id_hash: CryptoHash },
@@ -106,6 +116,7 @@ pub enum StorageKey {
     TokenMetadata,
     Enumeration,
     Approval,
+    TokenSeriesById,
 }
 
 #[near_bindgen]
@@ -115,7 +126,7 @@ impl Contract {
         Self::new(
             owner_id,
             NFTContractMetadata {
-                spec: "nft-1.0.0".to_string(),
+                spec: NFT_METADATA_SPEC.to_string(),
                 name: "NEAR Future Tickets Marketplace".to_string(),
                 symbol: "NEAR Future Tickets".to_string(),
                 icon: None,
@@ -129,7 +140,6 @@ impl Contract {
     #[init]
     pub fn new(owner_id: AccountId, metadata: NFTContractMetadata) -> Self {
         require!(!env::state_exists(), "Already initialized");
-        metadata.assert_valid();
         let this = Self {
             tokens: NonFungibleToken::new(StorageKey::NonFungibleToken, owner_id.clone(), Some(StorageKey::TokenMetadata), Some(StorageKey::Enumeration), Some(StorageKey::Approval),),
             events: UnorderedMap::new(StorageKey::Events),
@@ -142,13 +152,14 @@ impl Contract {
             metadata: LazyOption::new(
                 StorageKey::NFTContractMetadata.try_to_vec().unwrap(),
                 Some(&metadata),
-            )
+            ),
+            token_series_by_id: UnorderedMap::new(StorageKey::TokenSeriesById),
         };
 this
     }
 
     #[payable]
-    // Create an Event
+    // Create an Event and Tickets Structure with their respective capacity (copies)
     pub fn create_event(&mut self,
         token_metadata: TokenMetadata,
         name: String,
@@ -161,35 +172,46 @@ this
         banner: String,
         ticket_type: Vec<String>,
         ticket_banners: Vec<String>,
-        //royalty: Option<HashMap<AccountId, u32>>,
+        // royalty: Option<HashMap<AccountId, u32>>,
      ) -> Event {
-        // Actual Ticket types for a given Event
+        // Initial storage usage
+        let initial_storage_usage = env::storage_usage();
         let caller = env::signer_account_id();
         let index = i128::from(self.events.len() + 1);
         let mut children_token_map = Vec::new();
-
         let mut metadata = token_metadata;
 
         for (i, _x) in ticket_type.iter().enumerate() {
-            let mut ticket_title = format!("");
+
+            let token_series_id = format!("{}", (self.token_series_by_id.len() + 1));
+
+            let title = name.clone();
             metadata.copies = Some(U64(capacity[i].into()).0);
             metadata.media = Some(ticket_banners[i].clone());
-            ticket_title = format!("{:?}{}{}", metadata.title.clone() , TITLE_DELIMETER , ticket_type[i].clone());
+            let ticket_title = format!("{:?}{}{}", &title , TITLE_DELIMETER , ticket_type[i].clone());
             metadata.title = Some(ticket_title.to_string());
-            // assert!(ticket_title.is_some(), "token_metadata.title is required");
-            // let token_series_id = format!("{}", (children_token_map.len() + 1));
+
+            self.token_series_by_id.insert(&token_series_id, &TokenSeries{
+                metadata: metadata.clone(),
+                creator_id: caller.clone(),
+                tokens: UnorderedSet::new(
+                    StorageKey::TokensBySeriesInner {
+                        token_series: token_series_id.clone(),
+                    }
+                    .try_to_vec()
+                    .unwrap(),
+                ),
+                is_mintable: true,
+            });
+
             children_token_map.push(TokenSeriesJson{
                 metadata: metadata.clone(),
                 creator_id: caller.clone(),
-                
-            is_mintable: true,
+                is_mintable: true,
+                token_series_id,
             });
-            
-            // assert!(
-            //     children_token_map.get(&token_series_id).is_none(),
-            //     "Duplicate token_series_id"
-            // );
         }
+        // refund_deposit(initial_storage_usage);
 
         let event = Event {
             name: name,
@@ -204,7 +226,6 @@ this
             organizer: caller,
             ticket_type: ticket_type,
             tickets: children_token_map,
-            ticket_banners: ticket_banners,
         };
         self.events.insert(&event.index, &event);
         event
@@ -215,14 +236,31 @@ this
         let event_list = self.events.values_as_vector().to_vec();
         event_list
     }
-}
-// near_contract_standards::impl_non_fungible_token_core!(Contract, tokens);
-// near_contract_standards::impl_non_fungible_token_approval!(Contract, tokens);
-// near_contract_standards::impl_non_fungible_token_enumeration!(Contract, tokens);
 
-#[near_bindgen]
-impl NonFungibleTokenMetadataProvider for Contract {
-    fn nft_metadata(&self) -> NFTContractMetadata {
-        self.metadata.get().unwrap()
+    // Get Tickets
+    pub fn get_event_tickets(
+        &self,
+        from_index: Option<U128>,
+        limit: Option<u64>,
+    ) -> Vec<TokenSeriesJson> {
+        let start_index: u128 = from_index.map(From::from).unwrap_or_default();
+        assert!(
+            (self.token_series_by_id.len() as u128) > start_index,
+            "Out of bounds, please use a smaller from_index."
+        );
+        let limit = limit.map(|v| v as usize).unwrap_or(usize::MAX);
+        assert_ne!(limit, 0, "Cannot provide limit of 0.");
+
+        self.token_series_by_id
+            .iter()
+            .skip(start_index as usize)
+            .take(limit)
+            .map(|(token_series_id, token_series)| TokenSeriesJson{
+                token_series_id,
+                metadata: token_series.metadata,
+                creator_id: token_series.creator_id,
+                is_mintable: token_series.is_mintable,
+            })
+            .collect()
     }
 }
