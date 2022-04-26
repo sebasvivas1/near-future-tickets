@@ -40,9 +40,15 @@ export const initContract = async () => {
     nearConfig.contractName[0], //0 for the NFT contract
     {
       // View methods are read-only – they don't modify the state, but usually return some value
-      viewMethods: [''],
+      viewMethods: [
+        'nft_tokens',
+        'nft_supply_for_owner',
+        'nft_tokens_for_owner',
+        'nft_token',
+        'nft_total_supply',
+      ],
       // Change methods can modify the state, but you don't receive the returned value when called
-      changeMethods: [''],
+      changeMethods: ['nft_mint', 'nft_approve', 'nft_revoke'],
       // Sender is the account ID to initialize transactions.
       // getAccountId() will return empty string if user is still unauthorized
       // @ts-ignore: Unreachable code error
@@ -65,9 +71,17 @@ export const initContract = async () => {
         'get_supply_by_nft_contract_id',
         'get_sales_by_nft_contract_id',
         'storage_balance_of',
+        'get_sale',
+        'get_sales_by_owner_id',
       ],
       // Change methods can modify the state, but you don't receive the returned value when called
-      changeMethods: ['storage_deposit'],
+      changeMethods: [
+        'storage_deposit',
+        'withdraw_deposit',
+        'remove_sale',
+        'update_price',
+        'offer',
+      ],
       // Sender is the account ID to initialize transactions.
       // getAccountId() will return empty string if user is still unauthorized
       // @ts-ignore: Unreachable code error
