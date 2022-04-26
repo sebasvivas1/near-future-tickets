@@ -7,9 +7,9 @@ Quick Start
 To run this project locally:
 
 1. Prerequisites: Make sure you've installed [Node.js] ≥ 12
-2. Install dependencies: `yarn install`
-3. Go into frontend folder and run `yarn install` to install Typescript and Tailwind.
-4. Run the frontend from the frontend folder using: `yarn dev`
+2. Install dependencies: `npm install`
+3. Go into frontend folder and run `npm install` to install Typescript and Tailwind.
+4. Run the frontend from the frontend folder using: `npm run dev`
 
 Exploring The Code
 ==================
