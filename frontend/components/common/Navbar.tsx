@@ -27,20 +27,54 @@ export default function Navbar() {
   };
 
   return (
-    <div className="w-full text-figma-400 p-4 text-lg">
+    <div className="w-full text-figma-400 p-4 text-lg self-centerzs h-auto">
       <div className="flex justify-between">
-        <div className="">
+        <div className="self-center">
           <h2 className="drop-shadow-md text-3xl">NEAR Future Tickets</h2>
         </div>
-        <div className="flex space-x-24">
-          <h2>Home</h2>
-          <h2>All Events</h2>
-          <h2>My Events</h2>
+        <div className="self-center">
+          <div className="flex space-x-24">
+            <button type="button" onClick={() => router.push('/app')}>
+              <h2
+                className={`font-semibold ${
+                  currentPage === '/app'
+                    ? 'underline underline-offset-8 decoration-figma-500 decoration-4'
+                    : ''
+                }`}
+              >
+                Home
+              </h2>
+            </button>
+            <button type="button" onClick={() => router.push('/app/events')}>
+              <h2
+                className={`font-semibold ${
+                  currentPage === '/app/events'
+                    ? 'underline underline-offset-8 decoration-figma-500 decoration-4'
+                    : ''
+                }`}
+              >
+                All Events
+              </h2>
+            </button>
+            <button type="button" onClick={() => router.push('/app/profile')}>
+              <h2
+                className={`font-semibold ${
+                  currentPage === '/app/profile'
+                    ? 'underline underline-offset-8 decoration-figma-500 decoration-4'
+                    : ''
+                }`}
+              >
+                My Events
+              </h2>
+            </button>
+          </div>
         </div>
-        <SearchBar
-          className="rounded-lg border-2 h-8 py-px px-3"
-          events={events}
-        />
+        <div className="self-center">
+          <SearchBar
+            className="rounded-lg border-2 h-8 py-px px-3"
+            events={events}
+          />
+        </div>
         <div>
           {user === '' ? (
             <div>
@@ -55,18 +89,21 @@ export default function Navbar() {
               </button>
             </div>
           ) : (
-            <div>
-              <h2 className="bg-figma-500 text-figma-400 font-semibold w-full h-auto px-6 py-2 rounded-lg">
+            <div className="flex self-center">
+              <span className="bg-figma-500 text-figma-400 font-semibold w-full h-auto px-6 py-2 rounded-lg">
                 {user}
-              </h2>
-              <button
-                className=" hover:text-gray-400 text-white w-5 h-full ml-3"
-                onClick={() => {
-                  logOut();
-                }}
-              >
-                <LogOutIcon />
-              </button>
+              </span>
+
+              <div className="align-middle">
+                <button
+                  className=" hover:text-gray-400 text-white w-7 h-full ml-3"
+                  onClick={() => {
+                    logOut();
+                  }}
+                >
+                  <LogOutIcon />
+                </button>
+              </div>
             </div>
           )}
         </div>
