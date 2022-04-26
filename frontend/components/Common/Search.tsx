@@ -19,7 +19,7 @@ const Search = () => {
                 </div>
                 <input
                     type="text"
-                    className="block p-2 pl-10 w-70 text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:pl-3"
+                    className="block text-center p-2 pl-10 w-70 text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:pl-3 text-lg lg:px-4"
                     placeholder="Search Events"
                     onFocus={undefined}
                     onBlur={undefined}

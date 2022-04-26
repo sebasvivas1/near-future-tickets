@@ -43,6 +43,7 @@ module.exports = {
       backgroundImage: {
         'bg-1': 'url("/bg.png")',
         'bg-ticket': 'url("/ticket.png")',
+        
       },
     },
   },
