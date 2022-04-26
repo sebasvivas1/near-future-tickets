@@ -34,6 +34,7 @@ static DELIMETER: &str = ".";
 
 //Creating custom types to use within the contract. This makes things more readable. 
 pub type SalePriceInYoctoNear = U128;
+pub type TokenId = String;
 pub type FungibleTokenId = AccountId;
 pub type ContractAndTokenId = String;
 //defines the payout type we'll be parsing from the NFT contract as a part of the royalty standard.

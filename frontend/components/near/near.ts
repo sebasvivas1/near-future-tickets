@@ -31,13 +31,13 @@ export const initContract = async () => {
   }
 
   // Initializing our contract APIs by contract name and configuration
-  const contract = await new nearAPI.Contract(
+  const nftContract = await new nearAPI.Contract(
     // User's accountId as a string
     walletConnection.account(),
     // accountId of the contract we will be loading
     // NOTE: All contracts on NEAR are deployed to an account and
     // accounts can only have one contract deployed to them.
-    nearConfig.contractName,
+    nearConfig.contractName[0], //0 for the NFT contract
     {
       // View methods are read-only – they don't modify the state, but usually return some value
       viewMethods: [''],
@@ -50,8 +50,33 @@ export const initContract = async () => {
     }
   );
 
+  // Initializing our contract APIs by contract name and configuration
+  const marketContract = await new nearAPI.Contract(
+    // User's accountId as a string
+    walletConnection.account(),
+    // accountId of the contract we will be loading
+    // NOTE: All contracts on NEAR are deployed to an account and
+    // accounts can only have one contract deployed to them.
+    nearConfig.contractName[1], //1 for the marketplace contract
+    {
+      // View methods are read-only – they don't modify the state, but usually return some value
+      viewMethods: [
+        'get_supply_sales',
+        'get_supply_by_nft_contract_id',
+        'get_sales_by_nft_contract_id',
+        'storage_balance_of',
+      ],
+      // Change methods can modify the state, but you don't receive the returned value when called
+      changeMethods: ['storage_deposit'],
+      // Sender is the account ID to initialize transactions.
+      // getAccountId() will return empty string if user is still unauthorized
+      // @ts-ignore: Unreachable code error
+      sender: walletConnection.getAccountId(),
+    }
+  );
+
   return {
-    contract,
+    contracts: { nftContract, marketContract },
     nearConfig,
     walletConnection,
   };
