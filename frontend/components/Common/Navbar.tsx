@@ -30,8 +30,10 @@ export default function Navbar() {
           My Events 
         </button></div>
         <div><Search></Search></div>
-        <div className="rounded-full  bg-figma-500 text-lg p-2 lg:px-4">Image</div>
-        <div className=" font-semibold text-figma-300 p-2 ">mzterdox.near</div>
+        <div className="">
+        <img src="/user.png" alt="" className="w-64 lg:w-auto" />
+        </div>
+        <div className=" font-semibold text-figma-500 p-2 ">mzterdox.near</div>
         </div>  
       </div>
     </div>
