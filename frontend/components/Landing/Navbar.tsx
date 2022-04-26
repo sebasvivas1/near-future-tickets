@@ -1,6 +1,8 @@
+import { useRouter } from 'next/router';
 import React from 'react';
 
 export default function Navbar() {
+  const router = useRouter();
   return (
     <div className="flex justify-between">
       <div className="self-center">
@@ -10,6 +12,7 @@ export default function Navbar() {
         <button
           type="button"
           className="bg-figma-500 text-figma-400 text-lg p-2 rounded-lg lg:px-4"
+          onClick={() => router.push('/app')}
         >
           Launch
         </button>
