@@ -10,7 +10,7 @@ export default function EventCard({ data }: EventCardProps) {
     <div className="w-80 my-4">
       <div>
         <div>
-          <img src={data?.banner} alt={data?.name} className="rounded-2xl" />
+          <img src={data?.banner} alt={data?.name} className="rounded-t-2xl" />
         </div>
         <div className="bg-figma-300 rounded-b-2xl">
           <div className="flex space-x-4 p-3">
