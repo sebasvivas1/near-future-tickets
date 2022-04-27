@@ -46,6 +46,7 @@ export const initContract = async () => {
         'nft_tokens_for_owner',
         'nft_token',
         'nft_total_supply',
+        'get_events',
       ],
       // Change methods can modify the state, but you don't receive the returned value when called
       changeMethods: ['nft_mint', 'nft_approve', 'nft_revoke', 'create_event'],

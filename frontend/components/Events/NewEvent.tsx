@@ -114,9 +114,6 @@ export default function NewEvent() {
     }
   }, [capacityInput, ticketTypeInput]);
 
-  const data = { creator: user };
-  const meta = JSON.stringify(data);
-
   const event: Event = {
     organizer: user,
     name: name,
@@ -129,6 +126,7 @@ export default function NewEvent() {
     modality: modality,
     ticket_type: ticketType,
     ticket_banners: ticketBanners,
+    token_metadata: {},
   };
 
   return (
@@ -202,45 +200,38 @@ export default function NewEvent() {
           setValue={setTicketTypeInput}
           label="Ticket Types"
         />
-        {/* <Input
-            required
+        <div>
+          <h2 className="text-figma-400 mt-3 mb-1">Capacity *</h2>
+          <input
+            aria-label="Capacity"
+            className="text-md rounded-lg h-10 mb-4"
             type="text"
-            id="capacity"
             name="capacity"
-            placeholder="50, 300, 1000"
-            className="text-md text-figma-400 mt-8"
-            setValue={setCapacityInput}
-            label="Capacity"
-            onChange={() => {
-                console.log(capacityInput);
+            placeholder="100,400,1000"
+            id="capacity"
+            onChange={(e) => {
+              setCapacityInput(e.target.value);
             }}
-            /> */}
-        <h2 className="text-figma-400 mt-3 mb-1">Capacity *</h2>
-        <input
-          aria-label="Capacity"
-          className="text-md rounded-lg h-10 mb-4"
-          type="text"
-          name="capacity"
-          placeholder="100,400,1000"
-          id="capacity"
-          onChange={(e) => {
-            setCapacityInput(e.target.value);
-          }}
-        />
-
-        <label htmlFor="formFile" className="inline-block mb-2 text-figma-400">
-          Ticket's Banner *
-        </label>
-        <input
-          required
-          className="block w-full px-3 py-1.5 text-base font-normal text-figma-400 bg-white bg-clip-padding border border-solid border-gray-300 rounded-lg transition ease-in-out m-0 focus:text-figma-400 focus:bg-white focus:border-blue-600 focus:outline-none lg:border-0 lg:bg-figma-200"
-          type="file"
-          id="formFile"
-          multiple
-          onChange={(e) => {
-            retrieveTicketFiles(e);
-          }}
-        />
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="formFile"
+            className="inline-block mb-2 text-figma-400"
+          >
+            Ticket's Banner *
+          </label>
+          <input
+            required
+            className="block w-full px-3 py-1.5 text-base font-normal text-figma-400 bg-white bg-clip-padding border border-solid border-gray-300 rounded-lg transition ease-in-out m-0 focus:text-figma-400 focus:bg-white focus:border-blue-600 focus:outline-none lg:border-0 lg:bg-figma-200"
+            type="file"
+            id="formFile"
+            multiple
+            onChange={(e) => {
+              retrieveTicketFiles(e);
+            }}
+          />
+        </div>
         <button
           type="button"
           className="w-full lg:p-3  bg-figma-500 text-figma-300 font-semibold p-1 rounded-lg drop-shadow-lg mt-4"
