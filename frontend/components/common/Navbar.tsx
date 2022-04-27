@@ -27,7 +27,7 @@ export default function Navbar() {
   };
 
   return (
-    <div className="w-full text-figma-400 p-4 text-lg self-centerzs h-auto">
+    <div className="min-w-full text-figma-400 p-4 text-lg self-center h-auto">
       <div className="flex justify-between">
         <div className="self-center">
           <h2 className="drop-shadow-md text-3xl">NEAR Future Tickets</h2>

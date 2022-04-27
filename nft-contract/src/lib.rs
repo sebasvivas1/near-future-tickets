@@ -45,7 +45,7 @@ pub struct Event {
     modality: u8,
     capacity: Vec<u32>,
     date: String,
-    time: u64,
+    // time: String,
     status: u8,
     index: i128,
     banner: String,
@@ -163,13 +163,12 @@ this
     #[payable]
     // Create an Event and Tickets Structure with their respective capacity (copies)
     pub fn create_event(&mut self,
-        token_metadata: TokenMetadata,
         name: String,
         description: String,
         modality: u8,
         capacity: Vec<u32>,
         date: String,
-        time: u64,
+        // time: String,
         status: u8,
         banner: String,
         ticket_type: Vec<String>,
@@ -182,7 +181,20 @@ this
         let caller = env::signer_account_id();
         let index = i128::from(self.events.len() + 1);
         let mut children_token_map = Vec::new();
-        let mut metadata = token_metadata;
+        let mut metadata = TokenMetadata {
+            title: None,
+            description: None,
+            media: None,
+            media_hash: None,
+            copies: None,
+            issued_at: None,
+            expires_at:None,
+            starts_at: None,
+            updated_at: None,
+            extra: None,
+            reference: None,
+            reference_hash: None,
+        }; 
 
         // create a royalty map to store in the token
         let mut royalty = HashMap::new();
@@ -236,7 +248,7 @@ this
             description: description,
             modality: modality,
             date: date,
-            time: time,
+            // time: time,
             status: status,
             index: index,
             banner: banner,

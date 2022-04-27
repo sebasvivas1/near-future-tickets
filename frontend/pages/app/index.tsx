@@ -1,12 +1,11 @@
 import React from 'react';
+import Home from '../../components/AppLanding/Home';
 import Layout from '../../components/common/Layout';
 
 export default function LandingDapp() {
   return (
-    <div>
-      <Layout>
-        <h2>Layout body</h2>
-      </Layout>
-    </div>
+    <Layout>
+      <Home />
+    </Layout>
   );
 }

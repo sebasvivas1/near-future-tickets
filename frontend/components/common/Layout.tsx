@@ -3,6 +3,7 @@ import { useNear } from '../../hooks/useNear';
 import useUser from '../../hooks/useUser';
 import { initContract } from '../near/near';
 import Footer from './Footer';
+import MobileNav from './MobileNav';
 import Navbar from './Navbar';
 
 interface LayoutProps {
@@ -44,10 +45,15 @@ export default function Layout({ children }: LayoutProps) {
   }, [nearContext]);
 
   return (
-    <div className="bg-figma-200 min-h-screen w-full">
-      <Navbar />
+    <div className="bg-figma-200 min-h-screen min-w-full">
+      <div className="hidden lg:flex">
+        <Navbar />
+      </div>
+      <div className="lg:hidden">
+        <MobileNav />
+      </div>
       {children}
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }
