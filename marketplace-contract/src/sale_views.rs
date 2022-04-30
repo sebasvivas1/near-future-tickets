@@ -312,6 +312,46 @@ impl Contract {
                     }
                 }
             }
+        } else if (query_type_date_modality && !query_type_date_country && !query_type_country_modality) {
+            if let Some(event_date) = &event_date {
+                if let Some(event_modality) = &event_modality {
+                    let by_event_date = self.by_event_date.get(&event_date);
+                    let sales_one = if let Some(by_event_date) = by_event_date {
+                        by_event_date
+                    } else {
+                        return vec![];
+                    };
+                    let keys = sales_one.as_vector();
+                    let start = u128::from(from_index.unwrap_or(U128(0)));
+                    let mut preliminar_sales_one: Vec<Sale> = keys.iter()
+                        .skip(start as usize)
+                        .take(limit.unwrap_or(0) as usize)
+                        .map(|token_id| self.sales.get(&token_id).unwrap())
+                        .collect();
+
+                    let by_event_modality = self.by_event_modality.get(&event_modality);
+                    let sales_two = if let Some(by_event_modality) = by_event_modality {
+                        by_event_modality
+                    } else {
+                        return vec![];
+                    };
+                    let keys = sales_two.as_vector();
+                    let start = u128::from(from_index.unwrap_or(U128(0)));
+                    let mut preliminar_sales_two: Vec<Sale> = keys.iter()
+                        .skip(start as usize)
+                        .take(limit.unwrap_or(0) as usize)
+                        .map(|token_id| self.sales.get(&token_id).unwrap())
+                        .collect();
+
+                    for (i, x) in preliminar_sales_one.iter().enumerate() {
+                        for (j, y) in preliminar_sales_two.iter().enumerate() {
+                            if *x.token_id == *y.token_id {
+                                preliminar_sales.push(x.clone());
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         return preliminar_sales;
