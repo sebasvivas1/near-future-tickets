@@ -3,7 +3,8 @@ import React from 'react';
 import Event from '../../models/Event';
 import EventCard from '../Events/EventCard';
 import { initContract } from '../near/near';
-export default function Home() {
+
+export default function Events() {
   const [events, setEvents] = React.useState<Array<Event>>([]);
 
   const getEvents = async () => {
@@ -21,7 +22,7 @@ export default function Home() {
     <div className="p-4 lg:p-8">
       <div className="flex justify-between h-full">
         <h2 className="text-figma-400 font-semibold lg:text-2xl lg:self-center">
-          Upcoming Events
+          All Events
         </h2>
         <button
           type="button"
