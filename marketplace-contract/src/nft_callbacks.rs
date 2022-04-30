@@ -7,6 +7,9 @@ use crate::*;
 #[serde(crate = "near_sdk::serde")]
 pub struct SaleArgs {
     pub sale_conditions: SalePriceInYoctoNear,
+    pub event_date: String,
+    pub event_country: String,
+    pub event_modality: u8,
 }
 
 /*
@@ -72,14 +75,15 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
         );
 
         //if all these checks pass we can create the sale conditions object.
-        let SaleArgs { sale_conditions } =
+        let SaleArgs { sale_conditions, event_date, event_country, event_modality } =
             //the sale conditions come from the msg field. The market assumes that the user passed
             //in a proper msg. If they didn't, it panics. 
             near_sdk::serde_json::from_str(&msg).expect("Not valid SaleArgs");
 
         //create the unique sale ID which is the contract + DELIMITER + token ID
         let contract_and_token_id = format!("{}{}{}", nft_contract_id, DELIMETER, token_id);
-        
+
+        //----------------------------------------------------------------------------------
         //insert the key value pair into the sales map. Key is the unique ID. value is the sale object
         self.sales.insert(
             &contract_and_token_id,
@@ -93,7 +97,8 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
         );
 
         //Extra functionality that populates collections necessary for the view calls 
-
+        
+        //----------------------------------------------------------------------------------
         //get the sales by owner ID for the given owner. If there are none, we create a new empty set
         let mut by_owner_id = self.by_owner_id.get(&owner_id).unwrap_or_else(|| {
             UnorderedSet::new(
@@ -111,6 +116,7 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
         //insert that set back into the collection for the owner
         self.by_owner_id.insert(&owner_id, &by_owner_id);
 
+        //----------------------------------------------------------------------------------
         //get the token IDs for the given nft contract ID. If there are none, we create a new empty set
         let mut by_nft_contract_id = self
             .by_nft_contract_id
@@ -131,5 +137,44 @@ impl NonFungibleTokenApprovalsReceiver for Contract {
         //insert the set back into the collection for the given nft contract ID
         self.by_nft_contract_id
             .insert(&nft_contract_id, &by_nft_contract_id);
+
+        //----------------------------------------------------------------------------------
+        let mut by_event_date = self.by_event_date.get(&event_date).unwrap_or_else(|| {
+            UnorderedSet::new(
+                StorageKey::ByEventDateInner {
+                    event_date_hash: hash_date(&event_date),
+                }
+                .try_to_vec()
+                .unwrap(),
+            )
+        });
+        by_event_date.insert(&token_id);
+        self.by_event_date.insert(&event_date, &by_event_date);
+
+        //----------------------------------------------------------------------------------
+        let mut by_event_country = self.by_event_country.get(&event_country).unwrap_or_else(|| {
+            UnorderedSet::new(
+                StorageKey::ByEventCountryInner {
+                    event_country_hash: hash_date(&event_country),
+                }
+                .try_to_vec()
+                .unwrap(),
+            )
+        });
+        by_event_country.insert(&token_id);
+        self.by_event_country.insert(&event_country, &by_event_country);
+
+        //----------------------------------------------------------------------------------
+        let mut by_event_modality = self.by_event_modality.get(&event_modality).unwrap_or_else(|| {
+            UnorderedSet::new(
+                StorageKey::ByEventModalityInner {
+                    event_modality_hash: hash_modality(&event_modality),
+                }
+                .try_to_vec()
+                .unwrap(),
+            )
+        });
+        by_event_modality.insert(&token_id);
+        self.by_event_modality.insert(&event_modality, &by_event_modality);
     }
 }

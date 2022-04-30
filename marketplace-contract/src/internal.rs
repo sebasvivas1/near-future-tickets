@@ -9,6 +9,26 @@ pub(crate) fn hash_account_id(account_id: &AccountId) -> CryptoHash {
     hash
 }
 
+// pub(crate) fn hash_string(string: &str) -> CryptoHash {
+//     //get the default hash
+//     let mut hash = CryptoHash::default();
+//     //we hash the string and return it
+//     hash.copy_from_slice(&env::sha256(string.as_bytes()));
+//     hash
+// }
+
+pub(crate) fn hash_date(date: &String) -> CryptoHash {
+    let mut hash = CryptoHash::default();
+    hash.copy_from_slice(&env::sha256(date.as_bytes()));
+    hash
+}
+
+pub(crate) fn hash_modality(modality: &u8) -> CryptoHash {
+    let mut hash = CryptoHash::default();
+    hash.copy_from_slice(&env::sha256(modality.to_string().as_bytes()));
+    hash
+}
+
 impl Contract {
     //internal method for removing a sale from the market. This returns the previously removed sale object
     pub(crate) fn internal_remove_sale(

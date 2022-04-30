@@ -4,7 +4,7 @@ use near_sdk::json_types::{U128, U64};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{
     assert_one_yocto, env, ext_contract, near_bindgen, AccountId, Balance, Gas, PanicOnDefault,
-    Promise, CryptoHash, BorshStorageKey,
+    Promise, CryptoHash, BorshStorageKey, Timestamp, Duration,
 };
 use std::collections::HashMap;
 
@@ -64,6 +64,9 @@ pub struct Contract {
 
     //keep track of all the token IDs for sale for a given contract
     pub by_nft_contract_id: LookupMap<AccountId, UnorderedSet<TokenId>>,
+    pub by_event_date: LookupMap<String, UnorderedSet<ContractAndTokenId>>,
+    pub by_event_country: LookupMap<String, UnorderedSet<ContractAndTokenId>>,
+    pub by_event_modality: LookupMap<u8, UnorderedSet<ContractAndTokenId>>,
 
     //keep track of the storage that accounts have payed
     pub storage_deposits: LookupMap<AccountId, Balance>,
@@ -79,6 +82,12 @@ pub enum StorageKey {
     ByNFTContractIdInner { account_id_hash: CryptoHash },
     ByNFTTokenType,
     ByNFTTokenTypeInner { token_type_hash: CryptoHash },
+    ByEventDate,
+    ByEventDateInner { event_date_hash: CryptoHash },
+    ByEventCountry,
+    ByEventCountryInner { event_country_hash: CryptoHash },
+    ByEventModality,
+    ByEventModalityInner { event_modality_hash: CryptoHash },
     FTTokenIds,
     StorageDeposits,
 }
@@ -100,6 +109,9 @@ impl Contract {
             sales: UnorderedMap::new(StorageKey::Sales),
             by_owner_id: LookupMap::new(StorageKey::ByOwnerId),
             by_nft_contract_id: LookupMap::new(StorageKey::ByNFTContractId),
+            by_event_date: LookupMap::new(StorageKey::ByEventDate),
+            by_event_country: LookupMap::new(StorageKey::ByEventCountry),
+            by_event_modality: LookupMap::new(StorageKey::ByEventModality),
             storage_deposits: LookupMap::new(StorageKey::StorageDeposits),
         };
 
