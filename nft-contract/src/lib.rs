@@ -399,6 +399,12 @@ this
         event_list
     }
 
+    // Get one event given its id
+    pub fn get_event(self, index: i128) -> Event {
+        let event = self.events.get(&index).expect("Event Doesn't Exist");
+        event
+    }
+
     // Get Tickets
     pub fn get_event_tickets(
         &self,
