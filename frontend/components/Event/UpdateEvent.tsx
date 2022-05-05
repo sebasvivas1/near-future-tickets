@@ -9,7 +9,7 @@ import { create } from 'ipfs-http-client';
 
 export default function UpdateEvent() {
   const router = useRouter();
-  const eventIndex = router.query.index;
+  const { index } = router.query;
   const [event, setEvent] = React.useState<Event>(null);
   const [date, setDate] = React.useState(event?.date);
   const [description, setDescription] = React.useState(event?.description);
@@ -27,7 +27,7 @@ export default function UpdateEvent() {
     setEvent(
       // @ts-ignore: Unreachable code error
       await nearContext.contracts.nftContract.get_event({
-        index: parseInt(eventIndex),
+        index: parseInt(index[0]),
       })
     );
   };
@@ -53,7 +53,7 @@ export default function UpdateEvent() {
     // @ts-ignore: Unreachable code error
     await nearContext.contracts.nftContract.update_event(
       {
-        index: parseInt(eventIndex),
+        index: parseInt(index[0]),
         description: description,
         date: date || '28-09-2022',
         status: eventStatus,
