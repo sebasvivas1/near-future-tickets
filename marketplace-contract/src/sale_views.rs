@@ -183,7 +183,7 @@ impl Contract {
         event_modality: Option<u8>,
         from_index: Option<U128>,
         limit: Option<u64>,
-    ) -> Vec<Sale> {
+    ) -> &Vec<Sale> {
         //1 Solo Event_Date //2 Solo Event_Country //3 Solo Event_Modality 
         //4 Event_Date + Event_Country //5 Event_Date + Event_Modality 
         //6 Event_Country + Event_Modality //7 Event_Date + Event_Country + Event_Modality
@@ -223,7 +223,7 @@ impl Contract {
             query_type_modality = false;
         }
 
-        let mut preliminar_sales: Vec<Sale> = vec![];
+        let mut preliminar_sales: Vec<Sale> = Vec::new();
         if (query_type_date && !query_type_country && !query_type_modality) {
             if let Some(event_date) = &event_date {
                 let by_event_date = self.by_event_date.get(&event_date);
@@ -306,7 +306,7 @@ impl Contract {
                     for (i, x) in preliminar_sales_one.iter().enumerate() {
                         for (j, y) in preliminar_sales_two.iter().enumerate() {
                             if *x.token_id == *y.token_id {
-                                preliminar_sales.push(x.clone());
+                                preliminar_sales.push(*x.clone());
                             }
                         }
                     }
@@ -346,12 +346,54 @@ impl Contract {
                     for (i, x) in preliminar_sales_one.iter().enumerate() {
                         for (j, y) in preliminar_sales_two.iter().enumerate() {
                             if *x.token_id == *y.token_id {
-                                preliminar_sales.push(x.clone());
+                                preliminar_sales.push(*x.clone());
                             }
                         }
                     }
                 }
             }
+        } else if (query_type_country_modality && !query_type_date_country && !query_type_date_modality) {
+            if let Some(event_country) = &event_country {
+                if let Some(event_modality) = &event_modality {
+                    let by_event_country = self.by_event_country.get(&event_country);
+                    let sales_one = if let Some(by_event_country) = by_event_country {
+                        by_event_country
+                    } else {
+                        return vec![];
+                    };
+                    let keys = sales_one.as_vector();
+                    let start = u128::from(from_index.unwrap_or(U128(0)));
+                    let mut preliminar_sales_one: Vec<Sale> = keys.iter()
+                        .skip(start as usize)
+                        .take(limit.unwrap_or(0) as usize)
+                        .map(|token_id| self.sales.get(&token_id).unwrap())
+                        .collect();
+
+                    let by_event_modality = self.by_event_modality.get(&event_modality);
+                    let sales_two = if let Some(by_event_modality) = by_event_modality {
+                        by_event_modality
+                    } else {
+                        return vec![];
+                    };
+                    let keys = sales_two.as_vector();
+                    let start = u128::from(from_index.unwrap_or(U128(0)));
+                    let mut preliminar_sales_two: Vec<Sale> = keys.iter()
+                        .skip(start as usize)
+                        .take(limit.unwrap_or(0) as usize)
+                        .map(|token_id| self.sales.get(&token_id).unwrap())
+                        .collect();
+
+                    for (i, x) in preliminar_sales_one.iter().enumerate() {
+                        for (j, y) in preliminar_sales_two.iter().enumerate() {
+                            if *x.token_id == *y.token_id {
+                                preliminar_sales.push(*x.clone());
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (query_type_date_country_modality) {
+            
         }
 
         return preliminar_sales;
