@@ -10,7 +10,7 @@ const modalityList = [
   { _id: 1, name: 'Face to Face' },
 ];
 
-export default function UnitsDropdown({
+export default function ModalityDropdown({
   modality,
   setModality,
 }: ModalityDropdownProps) {

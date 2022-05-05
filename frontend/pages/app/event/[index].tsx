@@ -1,8 +1,6 @@
 import { useRouter } from 'next/router';
 import React from 'react';
 import { initContract } from '../../../components/near/near';
-import { useNear } from '../../../hooks/useNear';
-import useUser from '../../../hooks/useUser';
 import Event from '../../../models/Event';
 import EventData from '../../../components/Event/Event';
 import Layout from '../../../components/common/Layout';

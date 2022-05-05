@@ -33,7 +33,7 @@ export default function Home() {
       </div>
       <div className="lg:flex lg:justify-between lg:w-full lg:mt-7">
         {events.map((event, i) => (
-          <div className="flex justify-center">
+          <div className="flex justify-center" key={i}>
             <EventCard data={event} key={i} />
           </div>
         ))}
