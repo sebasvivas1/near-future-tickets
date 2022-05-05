@@ -5,7 +5,7 @@ export default interface Event {
   name?: string;
   description?: string;
   modality?: number;
-  capacity?: Array<number>;
+  capacity?: number;
   date?: string;
   // time?: string;
   status?: number;

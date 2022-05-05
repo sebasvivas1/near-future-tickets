@@ -1,16 +1,21 @@
 import { useRouter } from 'next/router';
 import React from 'react';
+import { useNear } from '../../hooks/useNear';
 import Event from '../../models/Event';
 import EventCard from '../Events/EventCard';
 import { initContract } from '../near/near';
 
-export default function Events() {
+export default function Profile() {
   const [events, setEvents] = React.useState<Array<Event>>([]);
+  const [nearContext, setNearContext] = useNear();
+  const [username, setUsername] = React.useState('');
 
   const getEvents = async () => {
-    const { contracts } = await initContract();
+    setNearContext(await initContract());
+    // setNearContext(await NEAR);
     // @ts-ignore: Unreachable code error
-    setEvents(await contracts.nftContract.get_events());
+    setEvents(await nearContext.contracts.nftContract.get_events());
+    setUsername(nearContext.contracts.nftContract.account.accountId);
   };
 
   React.useEffect(() => {
@@ -22,7 +27,7 @@ export default function Events() {
     <div className="p-4 lg:p-8">
       <div className="flex justify-between h-full">
         <h2 className="text-figma-400 font-semibold lg:text-2xl lg:self-center">
-          All Events
+          My Events
         </h2>
         <button
           type="button"

@@ -43,7 +43,7 @@ pub struct Event {
     name: String,
     description: String,
     modality: u8,
-    capacity: Vec<u32>,
+    capacity: u32,
     date: String,
     // time: String,
     status: u8,
@@ -210,12 +210,15 @@ this
             }
         }
 
+        let mut total_capacity = 0;
+
         for (i, _x) in ticket_type.iter().enumerate() {
 
             let token_series_id = format!("{}", (self.token_series_by_id.len() + 1));
 
             let title = name.clone();
             metadata.copies = Some(U64(capacity[i].into()).0);
+            total_capacity += capacity[i];
             metadata.media = Some(ticket_banners[i].clone());
             let ticket_title = format!("{:?}{}{}", &title , TITLE_DELIMETER , ticket_type[i].clone());
             metadata.title = Some(ticket_title.to_string());
@@ -252,7 +255,7 @@ this
             status: status,
             index: index,
             banner: banner,
-            capacity: capacity,
+            capacity: total_capacity,
             organizer: caller,
             ticket_type: ticket_type,
             tickets: children_token_map,
@@ -397,6 +400,31 @@ this
     pub fn get_events(self) -> Vec<Event> {
         let event_list = self.events.values_as_vector().to_vec();
         event_list
+    }
+
+     // Get Events of a given owner
+    //  pub fn get_my_events(self, account_id: AccountId) -> Vec<Event> {
+    //     let event_list = self.events.iter().find(|x| x.organizer == account_id);
+    //     event_list
+    // }
+
+    // Get one event given its id
+    pub fn get_event(self, index: i128) -> Event {
+        let event = self.events.get(&index).expect("Event Doesn't Exist");
+        event
+    }
+
+    // Update Event
+    #[payable]
+    pub fn update_event(&mut self, index: i128, description: String, banner: String, status: u8, date: String) -> Event {
+        let mut event = self.events.get(&index).expect("Event Doesn't exist!");
+        assert!(event.organizer == env::signer_account_id(), "Signer is not authorized to update this event.");
+        event.description = description;
+        event.banner = banner;
+        event.status = status;
+        event.date = date;
+        self.events.insert(&index, &event);
+        return event;
     }
 
     // Get Tickets

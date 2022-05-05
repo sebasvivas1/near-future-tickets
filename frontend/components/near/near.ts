@@ -47,9 +47,16 @@ export const initContract = async () => {
         'nft_token',
         'nft_total_supply',
         'get_events',
+        'get_event',
       ],
       // Change methods can modify the state, but you don't receive the returned value when called
-      changeMethods: ['nft_mint', 'nft_approve', 'nft_revoke', 'create_event'],
+      changeMethods: [
+        'nft_mint',
+        'nft_approve',
+        'nft_revoke',
+        'create_event',
+        'update_event',
+      ],
       // Sender is the account ID to initialize transactions.
       // getAccountId() will return empty string if user is still unauthorized
       // @ts-ignore: Unreachable code error
