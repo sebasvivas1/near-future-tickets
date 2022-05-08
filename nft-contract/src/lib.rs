@@ -97,7 +97,9 @@ pub struct Contract {
     pub events: UnorderedMap<i128, Event>,
 
     // Stores all created Tickets
-    token_series_by_id: UnorderedMap<TokenSeriesId, TokenSeries>,
+    pub token_series_by_id: UnorderedMap<TokenSeriesId, TokenSeries>,
+
+    pub events_by_organizer: LookupMap<AccountId, UnorderedSet<i128>>,
 }
 
 /// Helper structure for keys of the persistent collections.
@@ -119,6 +121,8 @@ pub enum StorageKey {
     Enumeration,
     Approval,
     TokenSeriesById,
+    EventsByOrganizer,
+    EventsByOrganizerInner { organizer_hash: CryptoHash },
 }
 
 #[near_bindgen]
@@ -156,6 +160,7 @@ impl Contract {
                 Some(&metadata),
             ),
             token_series_by_id: UnorderedMap::new(StorageKey::TokenSeriesById),
+            events_by_organizer: LookupMap::new(StorageKey::EventsByOrganizer),
         };
 this
     }
@@ -256,13 +261,26 @@ this
             index: index,
             banner: banner,
             capacity: total_capacity,
-            organizer: caller,
+            organizer: caller.clone(),
             ticket_type: ticket_type,
             tickets: children_token_map,
         };
         self.events.insert(&event.index, &event);
         let required_storage_in_bytes = env::storage_usage() - initial_storage_usage;
         refund_deposit(required_storage_in_bytes);
+
+        let mut by_organizer = self
+        .events_by_organizer.get(&caller).unwrap_or_else(|| {
+            UnorderedSet::new(
+                StorageKey::EventsByOrganizerInner {
+                    organizer_hash: hash_account_id(&caller),
+                }
+                .try_to_vec()
+                .unwrap(),
+            )
+        });
+        by_organizer.insert(&index);
+        self.events_by_organizer.insert(&caller, &by_organizer);
 
         event
     }
@@ -407,6 +425,18 @@ this
     //     let event_list = self.events.iter().find(|x| x.organizer == account_id);
     //     event_list
     // }
+
+    pub fn get_events_by_owner(self, account_id: AccountId) -> Vec<Event> {
+        let vector_return: Vec<Event> = Vec::new();
+        let by_organizer = self.events_by_organizer.get(&account_id);
+        let events = if let Some(by_organizer) = by_organizer {
+            by_organizer
+        } else {
+            return vector_return;
+        };
+        let keys = events.as_vector();
+        keys.iter().map(|index| self.events.get(&index).unwrap()).collect()
+    }
 
     // Get one event given its id
     pub fn get_event(self, index: i128) -> Event {
