@@ -26,6 +26,16 @@ export default function Navbar() {
     await nearContext.walletConnection.signOut();
   };
 
+  const getEvents = async () => {
+    const { contracts } = await initContract();
+    // @ts-ignore: Unreachable code error
+    setEvents(await contracts.nftContract.get_events());
+  };
+
+  React.useEffect(() => {
+    getEvents();
+  }, []);
+
   return (
     <div className="min-w-full text-figma-400 p-4 text-lg self-center h-auto">
       <div className="flex justify-between">
