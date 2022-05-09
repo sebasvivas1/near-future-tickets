@@ -39,7 +39,7 @@ export default function SearchBar({ events, className }: SearchBarProps) {
           {searchTerm?.map((value, i) => (
             <a
               key={i}
-              href={`/app/nft/${value?.index}`}
+              href={`/app/event/${value?.index}`}
               className="w-full flex items-center border-b-2 border-primary-blue-400 hover:bg-gray-100 hover:text-black text-gray-500 py-1 relative"
             >
               <a className="text-black">{value.name}</a>
