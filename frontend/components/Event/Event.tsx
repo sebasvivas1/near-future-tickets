@@ -1,7 +1,10 @@
 import { useRouter } from 'next/router';
 import React from 'react';
+import { marketContractName } from '../../config';
+import { useNear } from '../../hooks/useNear';
 import useUser from '../../hooks/useUser';
 import Event from '../../models/Event';
+import { initContract } from '../near/near';
 
 interface EventProps {
   event: Event;
@@ -10,13 +13,36 @@ interface EventProps {
 export default function EventData({ event }: EventProps) {
   const router = useRouter();
   const [user] = useUser();
+  const [nearContext, setNearContext] = useNear();
+
+  const openSale = async () => {
+    if (nearContext) {
+      if (event?.tickets.length < 1) {
+        null;
+      }
+      if (event?.tickets.length === 1) {
+        // @ts-ignore: Unreachable code error
+        await nearContext.contracts.nftContract.nft_approve(
+          {
+            token_id: event?.tickets[0]?.token_series_id,
+            account_id: marketContractName,
+          },
+          '100000000000000',
+          '440000000000000000000'
+        );
+      }
+    } else {
+      setNearContext(await initContract());
+      openSale();
+    }
+  };
   return (
     <div className="min-h-screen lg:flex lg:flex-col">
       <div className="mb-28">
         <div className="lg:flex lg:justify-between lg:w-full lg:h-auto lg:p-8">
           <div className="text-figma-300">
             <h2 className="lg:text-9xl font-semibold">{event?.name}</h2>
-            <h2 className="lg:text-2xl ">{event?.description}</h2>
+            <h2 className="lg:text-2xl lg:mt-8">{event?.description}</h2>
           </div>
           <div className="lg:w-1/4">
             <img src={event?.banner} alt={event?.name} className="rounded-xl" />
@@ -29,6 +55,7 @@ export default function EventData({ event }: EventProps) {
             <h2>Total Capacity: {event?.capacity}</h2>
             <h2>Status: {event?.status}</h2>
             <h2>Available Tickets:</h2>
+            <h2>Token Id: {event?.tickets[0].token_series_id}</h2>
             {event?.tickets?.map((ticket, x) => (
               <div key={x}>
                 <h2>
@@ -41,15 +68,30 @@ export default function EventData({ event }: EventProps) {
           <div>
             {user === event?.organizer ? (
               <div>
-                <button
-                  type="button"
-                  className="bg-figma-500 lg:px-4 lg:py-1.5 text-figma-400 lg:text-lg font-semibold rounded-lg"
-                  onClick={() =>
-                    router.push(`/app/event/update/${event?.index}`)
-                  }
-                >
-                  Update Event
-                </button>
+                <div className="lg:flex lg:space-x-6">
+                  <button
+                    type="button"
+                    className="bg-figma-500 lg:px-4 lg:py-1.5 text-figma-400 lg:text-lg font-semibold rounded-lg"
+                    onClick={() =>
+                      router.push(`/app/event/update/${event?.index}`)
+                    }
+                  >
+                    Update Event
+                  </button>
+                  {event?.status === 1 ? (
+                    <div>
+                      <button
+                        type="button"
+                        className="bg-figma-500 lg:px-4 lg:py-1.5 text-figma-400 lg:text-lg font-semibold rounded-lg"
+                        onClick={() => {
+                          openSale();
+                        }}
+                      >
+                        Open Sale!
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             ) : (
               <div className="bg-figma-500 rounded-2xl lg:w-96 lg:h-36 lg:p-5">
