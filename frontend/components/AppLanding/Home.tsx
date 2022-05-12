@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import React from 'react';
 import Event from '../../models/Event';
+import Carousel from '../Carousel/Carousel';
 import EventCard from '../Events/EventCard';
 import { initContract } from '../near/near';
 export default function Home() {
@@ -18,26 +19,35 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <div className="p-4 lg:p-8">
-      <div className="flex justify-between h-full">
-        <h2 className="text-figma-400 font-semibold lg:text-2xl lg:self-center">
-          Upcoming Events
-        </h2>
-        <button
-          type="button"
-          className="bg-figma-500 text-figma-400 px-4 py-1.5 rounded-lg lg:px-6 lg:py-2 lg:text-xl"
-          onClick={() => router.push('/app/new')}
-        >
-          New Event
-        </button>
-      </div>
-      <div className="lg:flex lg:justify-between lg:w-full lg:mt-7">
-        {events.map((event, i) => (
-          <div className="flex justify-center" key={i}>
-            <EventCard data={event} key={i} />
+    <div>
+      {events.length > 0 ? (
+        <div>
+          <div>
+            <Carousel />
           </div>
-        ))}
-      </div>
+          <div className="p-4 lg:p-8">
+            <div className="flex justify-between h-full">
+              <h2 className="text-figma-400 font-semibold lg:text-2xl lg:self-center">
+                Upcoming Events
+              </h2>
+              <button
+                type="button"
+                className="bg-figma-500 text-figma-400 px-4 py-1.5 rounded-lg lg:px-6 lg:py-2 lg:text-xl"
+                onClick={() => router.push('/app/new')}
+              >
+                New Event
+              </button>
+            </div>
+            <div className="flex justify-center lg:grid lg:grid-cols-4">
+              {events.map((event, i) => (
+                <div className="flex justify-center" key={i}>
+                  <EventCard data={event} key={i} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

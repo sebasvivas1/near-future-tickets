@@ -6,7 +6,6 @@ import Layout from '../../components/common/Layout';
 export default function LandingDapp() {
   return (
     <Layout>
-      {/* <Carousel /> */}
       <Home />
     </Layout>
   );
