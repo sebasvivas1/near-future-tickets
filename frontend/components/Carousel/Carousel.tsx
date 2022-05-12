@@ -61,19 +61,18 @@ export default function CarouselComponent() {
     <div>
       {featuredEvents ? (
         <div ref={slideRef} className="select-none relative bg-bg-event p-12">
-          <div className="flex justify-evenly">
+          <div className="flex justify-between">
             <div className="justify-start">
               <h2 className="text-figma-400 font-semibold text-8xl">
-                {featuredEvents[currentIndex]?.name || 'Event Title'}
+                {featuredEvents[currentIndex]?.name}
               </h2>
               <h2 className="text-figma-400 font-semibold mt-9 text-3xl">
-                {featuredEvents[currentIndex]?.description ||
-                  'Event Description'}
+                {featuredEvents[currentIndex]?.description}
               </h2>
             </div>
-            <div className="justify-end">
+            <div className="max-w-lg">
               <img
-                src={featuredEvents[currentIndex]?.banner || './banner1.png'}
+                src={featuredEvents[currentIndex]?.banner}
                 alt=""
                 className="w-full rounded-lg"
               />
