@@ -53,7 +53,7 @@ export default function Layout({ children }: LayoutProps) {
         <MobileNav />
       </div>
       {children}
-      {/* <Footer /> */}
+      <Footer />
     </div>
   );
 }
