@@ -22,9 +22,5 @@ export default function EventDetails() {
     get_event();
   }, [event]);
 
-  return (
-    <Layout>
-      <EventData event={event} />
-    </Layout>
-  );
+  return <Layout>{event ? <EventData event={event} /> : null}</Layout>;
 }
