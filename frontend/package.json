@@ -11,6 +11,7 @@
   "dependencies": {
     "@deadcoder0904/react-typical": "^0.1.2",
     "autoprefixer": "^10.4.4",
+    "framer-motion": "^6.3.3",
     "ipfs-http-client": "^56.0.3",
     "near-api-js": "^0.44.2",
     "next": "12.1.2",
