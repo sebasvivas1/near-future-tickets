@@ -194,7 +194,7 @@ this
             extra: None,
             reference: None,
             reference_hash: None,
-        }; 
+        };
 
         // create a royalty map to store in the token
         let mut royalty = HashMap::new();
@@ -273,8 +273,8 @@ this
         token_series_id: TokenSeriesId,
         receiver_id: AccountId
     ) -> TokenId {
-        let token_series = self.token_series_by_id.get(&token_series_id).expect("Token series not exist");
-        assert_eq!(env::predecessor_account_id(), token_series.creator_id, "not creator");
+        self.token_series_by_id.get(&token_series_id).expect("Token series not exist");
+        // assert_eq!(env::predecessor_account_id(), token_series.creator_id, "not creator");
         let token_id: TokenId = self._nft_mint_series(token_series_id, receiver_id);
         token_id
     }
