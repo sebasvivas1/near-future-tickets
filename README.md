@@ -1,6 +1,3 @@
-Template for NEAR dApps using Rust - Nextjs - Tailwindcss
-==================
-
 Quick Start
 ===========
 
