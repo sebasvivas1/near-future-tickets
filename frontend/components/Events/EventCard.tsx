@@ -7,9 +7,27 @@ interface EventCardProps {
 }
 
 export default function EventCard({ data }: EventCardProps) {
+  console.log(data);
+  const months: Map<number, string> = new Map<number,string>([
+    [1, 'January'],
+    [2, 'February'],
+    [3, 'March'],
+    [4, 'April'],
+    [5, 'May'],
+    [6, 'June'],
+    [7, 'July'],
+    [8, 'August'],
+    [9, 'September'],
+    [10, 'October'],
+    [11, 'November'],
+    [12, 'December'],
+  ]);
+  function getMonth(monthInNumber: number): string {
+    return months.get(monthInNumber);
+  }
   const router = useRouter();
   return (
-    <div className="w-80 my-4 lg:w-96 lg:h-96">
+    <div className="w-80 my-4 lg:w-96 lg:h-96 md:w-75 md:h-75 sm:w-60 sm:h-60">
       <div>
         <div>
           <img
@@ -26,9 +44,12 @@ export default function EventCard({ data }: EventCardProps) {
                 type="button"
                 onClick={() => router.push(`/app/event/${data?.index}`)}
               >
-                <h2 className="text-lg text-figma-100 lg:text-2xl">APR</h2>
+                <h2 className="text-lg text-figma-100 lg:text-2xl">
+                  {getMonth(parseInt(data?.date.trimEnd().split('-')[1]))}
+                </h2>
                 <h2 className="text-figma-500 text-2xl font-semibold lg:text-3xl">
-                  17
+                  {data?.date.trimEnd().split('-')[0]}
+                  //{console.log(data?.date)}
                 </h2>
               </button>
             </div>

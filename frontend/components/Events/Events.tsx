@@ -8,9 +8,9 @@ export default function Events() {
   const [events, setEvents] = React.useState<Array<Event>>([]);
 
   const getEvents = async () => {
-    const { contracts } = await initContract();
+    const { contract } = await initContract();
     // @ts-ignore: Unreachable code error
-    setEvents(await contracts.nftContract.get_events());
+    setEvents(await contract.get_events());
   };
 
   React.useEffect(() => {

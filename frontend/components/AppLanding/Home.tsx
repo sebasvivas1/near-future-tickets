@@ -9,7 +9,7 @@ export default function Home() {
   const getEvents = async () => {
     const { contracts } = await initContract();
     // @ts-ignore: Unreachable code error
-    setEvents(await contracts.nftContract.get_events());
+    setEvents(await contract.get_events());
   };
 
   React.useEffect(() => {

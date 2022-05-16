@@ -14,7 +14,7 @@ export default function EventDetails() {
     const NEAR = await initContract();
     setEvent(
       // @ts-ignore: Unreachable code error
-      await NEAR.contracts.nftContract.get_event({ index: parseInt(index) })
+      await NEAR.contract.get_event({ index: parseInt(index) })
     );
   };
 

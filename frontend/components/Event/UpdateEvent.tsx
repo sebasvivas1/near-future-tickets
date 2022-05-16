@@ -26,7 +26,7 @@ export default function UpdateEvent() {
   const getEvent = async () => {
     setEvent(
       // @ts-ignore: Unreachable code error
-      await nearContext.contracts.nftContract.get_event({
+      await nearContext.contract.get_event({
         index: parseInt(index[0]),
       })
     );
@@ -51,7 +51,7 @@ export default function UpdateEvent() {
 
   const handleSubmit = async () => {
     // @ts-ignore: Unreachable code error
-    await nearContext.contracts.nftContract.update_event(
+    await nearContext.contract.update_event(
       {
         index: parseInt(index[0]),
         description: description,

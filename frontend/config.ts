@@ -1,7 +1,5 @@
 export const nftContractName =
-  process.env.NFT_CONTRACT_NAME || 'dev-1651714830629-81403542338857';
-export const marketContractName =
-  process.env.MARKET_CONTRACT_NAME || 'dev-1651714847073-29755330354579';
+  process.env.NFT_CONTRACT_NAME || 'dev-1652482465948-80732356992465';
 
 export function getConfig(env: string) {
   switch (env) {
@@ -10,7 +8,7 @@ export function getConfig(env: string) {
       return {
         networkId: 'mainnet',
         nodeUrl: 'https://rpc.mainnet.near.org',
-        contractName: [nftContractName, marketContractName],
+        contractName: [nftContractName],
         walletUrl: 'https://wallet.near.org',
         helperUrl: 'https://helper.mainnet.near.org',
         explorerUrl: 'https://explorer.mainnet.near.org',
@@ -20,7 +18,7 @@ export function getConfig(env: string) {
       return {
         networkId: 'testnet',
         nodeUrl: 'https://rpc.testnet.near.org',
-        contractName: [nftContractName, marketContractName],
+        contractName: [nftContractName],
         walletUrl: 'https://wallet.testnet.near.org',
         helperUrl: 'https://helper.testnet.near.org',
         explorerUrl: 'https://explorer.testnet.near.org',
@@ -29,7 +27,7 @@ export function getConfig(env: string) {
       return {
         networkId: 'betanet',
         nodeUrl: 'https://rpc.betanet.near.org',
-        contractName: [nftContractName, marketContractName],
+        contractName: [nftContractName],
         walletUrl: 'https://wallet.betanet.near.org',
         helperUrl: 'https://helper.betanet.near.org',
         explorerUrl: 'https://explorer.betanet.near.org',
@@ -40,21 +38,21 @@ export function getConfig(env: string) {
         nodeUrl: 'http://localhost:3030',
         keyPath: `${process.env.HOME}/.near/validator_key.json`,
         walletUrl: 'http://localhost:4000/wallet',
-        contractName: [nftContractName, marketContractName],
+        contractName: [nftContractName],
       };
     case 'test':
     case 'ci':
       return {
         networkId: 'shared-test',
         nodeUrl: 'https://rpc.ci-testnet.near.org',
-        contractName: [nftContractName, marketContractName],
+        contractName: [nftContractName],
         masterAccount: 'test.near',
       };
     case 'ci-betanet':
       return {
         networkId: 'shared-test-staging',
         nodeUrl: 'https://rpc.ci-betanet.near.org',
-        contractName: [nftContractName, marketContractName],
+        contractName: [nftContractName],
         masterAccount: 'test.near',
       };
     default:

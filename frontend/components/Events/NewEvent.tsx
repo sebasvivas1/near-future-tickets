@@ -69,7 +69,7 @@ export default function NewEvent() {
 
   const handleSubmit = async () => {
     // @ts-ignore: Unreachable code error
-    await nearContext.contracts.nftContract.create_event(
+    await nearContext.contract.create_event(
       {
         name: event.name,
         description: event.description,
