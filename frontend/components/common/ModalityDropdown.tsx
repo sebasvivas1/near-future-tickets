@@ -22,7 +22,7 @@ export default function ModalityDropdown({
           value={modality}
           onChange={(e) => setModality(parseInt(e.target.value))}
           onBlur={(e) => setModality(parseInt(e.target.value))}
-          className="rounded-lg sm:w-1/2 w-full px-3 flex mt-2 shadow-lg text-sm"
+          className="rounded-lg sm:w-1/2 lg:w-full px-3 flex mt-2 shadow-lg text-sm"
         >
           <option>SELECCIONE</option>
           {modalityList.map((c) => (

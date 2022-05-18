@@ -24,7 +24,7 @@ export default function Profile() {
   const router = useRouter();
 
   return (
-    <div className="p-4 lg:p-8">
+    <div className="p-4 lg:p-8 min-h-screen">
       <div className="flex justify-between h-full">
         <h2 className="text-figma-400 font-semibold lg:text-2xl lg:self-center">
           My Events

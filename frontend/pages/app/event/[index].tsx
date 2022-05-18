@@ -3,7 +3,7 @@ import React from 'react';
 import { initContract } from '../../../components/near/near';
 import Event from '../../../models/Event';
 import EventData from '../../../components/Event/Event';
-import Layout from '../../../components/common/Layout';
+import EventLayout from '../../../components/common/EventLayout';
 
 export default function EventDetails() {
   const router = useRouter();
@@ -22,5 +22,7 @@ export default function EventDetails() {
     get_event();
   }, [event]);
 
-  return <Layout>{event ? <EventData event={event} /> : null}</Layout>;
+  return (
+    <EventLayout>{event ? <EventData event={event} /> : null}</EventLayout>
+  );
 }

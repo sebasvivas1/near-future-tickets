@@ -1,15 +1,16 @@
 import { create } from 'ipfs-http-client';
 import React from 'react';
+import dayjs from 'dayjs';
 import { useNear } from '../../hooks/useNear';
 import useUser from '../../hooks/useUser';
 import Event from '../../models/Event';
 import ModalityDropdown from '../common/ModalityDropdown';
 import { Input } from '../inputs/Input';
+import useNotify from '../../hooks/useNotify';
 
 export default function NewEvent() {
   const [name, setName] = React.useState('');
   const [date, setDate] = React.useState('');
-  //   const [time, setTime] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [eventStatus, setEventStatus] = React.useState<number>(1);
   const [modality, setModality] = React.useState<number>();
@@ -17,13 +18,14 @@ export default function NewEvent() {
   const [ticketType, setTicketType] = React.useState<Array<string>>();
   const [ticketBanners, setTicketBanners] = React.useState<Array<string>>([]);
   const [file, setFile] = React.useState([]);
-  const [ticketFiles, setTicketFiles] = React.useState([]);
-  const [urlArr, setUrlArr] = React.useState<string>('');
+  const [urlArr, setUrlArr] = React.useState<string>('/banner_placeholder.jpg');
   const [nearContext] = useNear();
   const [user] = useUser();
   const [uploaded, setUploaded] = React.useState(false);
   const [capacityInput, setCapacityInput] = React.useState<string>('');
   const [capacity, setCapacity] = React.useState<Array<number>>();
+
+  const notify = useNotify();
 
   // @ts-ignore: Unreachable code error
   const client = create('https://ipfs.infura.io:5001/api/v0');
@@ -49,7 +51,6 @@ export default function NewEvent() {
     e.preventDefault();
     setUploaded(false);
     const data = e.target.files;
-    setTicketFiles(e.target.files);
     try {
       const urlList = [];
       for (let index = 0; index < data.length; index++) {
@@ -61,13 +62,15 @@ export default function NewEvent() {
         console.log(urlList);
       }
       setTicketBanners(urlList);
-      //   console.log(ticketBanners);
     } catch (error) {
       console.log(error.message);
     }
   };
 
   const handleSubmit = async () => {
+    if (dayjs(date).isBefore(dayjs(new Date()))) {
+      return notify('Event Date cannot be before today', 'warning');
+    }
     // @ts-ignore: Unreachable code error
     await nearContext.contracts.nftContract.create_event(
       {
@@ -129,28 +132,36 @@ export default function NewEvent() {
   };
 
   return (
-    <div className="lg:flex lg:justify-center lg:items-center lg:align-middle lg:p-9 p-5">
+    <div className="lg:flex lg:justify-center lg:items-center lg:align-middle lg:p-9 p-5 lg:min-h-screen">
       <div className="flex lg:justify-center lg:items-center lg:align-middle">
         <div className="mb-3 w-96">
-          <div className={`${uploaded ? 'flex' : 'hidden'}`}>
-            <img src={urlArr} alt="" className="w-72 h-72" />
+          <div>
+            <img src={urlArr} alt="" className="w-72 h-72 rounded-md" />
           </div>
-          <label
-            htmlFor="formFile"
-            className="inline-block mb-2 text-figma-400"
+          <div className="flex flex-col">
+            <label
+              htmlFor="formFile"
+              className="inline-block mb-2 text-figma-400"
+            >
+              Event Banner *
+            </label>
+            <input
+              required
+              className="file:mr-4 file:py-2 file:px-4
+              file:rounded-md file:border-0
+              file:text-sm file:font-semibold
+              file:bg-white file:text-figma-500
+              hover:file:bg-figma-500 hover:file:text-figma-400 text-figma-400"
+              type="file"
+              id="formFile"
+              onChange={(e) => {
+                retrieveFile(e);
+              }}
+            />
+          </div>
+          <h2
+            className={`${uploaded ? 'inline-block text-figma-400' : 'hidden'}`}
           >
-            Event Banner *
-          </label>
-          <input
-            required
-            className="block w-full px-3 py-1.5 text-base font-normal text-figma-400 bg-white bg-clip-padding border border-solid border-gray-300 rounded-lg transition ease-in-out m-0 focus:text-figma-400 focus:bg-white focus:border-blue-600 focus:outline-none lg:border-0 lg:bg-figma-200"
-            type="file"
-            id="formFile"
-            onChange={(e) => {
-              retrieveFile(e);
-            }}
-          />
-          <h2 className={`${uploaded ? 'inline-block' : 'hidden'}`}>
             File Uploaded Succesfully!
           </h2>
         </div>
@@ -158,7 +169,7 @@ export default function NewEvent() {
       <div className="lg:w-1/2 ">
         <Input
           required
-          className="text-figma-400 mt-8"
+          className="text-figma-400 mt-8 rounded-md"
           label="Event Title *"
           name="title"
           type="text"
@@ -175,45 +186,49 @@ export default function NewEvent() {
           value={description}
           setValue={setDescription}
         />
-        <div>
+        <div className="w-full">
           <h2 className="text-figma-400">Modality *</h2>
           <ModalityDropdown modality={modality} setModality={setModality} />
         </div>
-        <Input
-          required
-          type="datetime-local"
-          id="date"
-          name="date"
-          placeholder=""
-          className="h-8 text-sm rounded-lg text-figma-400 mt-8"
-          setValue={setDate}
-          label="Event Date"
-        />
-        <Input
-          required
-          type="text"
-          id="ticketType"
-          name="ticketType"
-          placeholder="VIP, GENERAL, X"
-          className="text-md text-figma-400 mt-8"
-          setValue={setTicketTypeInput}
-          label="Ticket Types"
-        />
-        <div>
-          <h2 className="text-figma-400 mt-3 mb-1">Capacity *</h2>
-          <input
-            aria-label="Capacity"
-            className="text-md rounded-lg h-10 mb-4"
+        <div className="flex w-full space-x-3">
+          <div>
+            <h2 className="text-figma-400 mb-1">Capacity *</h2>
+            <input
+              aria-label="Capacity"
+              className="text-md rounded-lg"
+              type="text"
+              name="capacity"
+              placeholder="100,400,1000"
+              id="capacity"
+              onChange={(e) => {
+                setCapacityInput(e.target.value);
+              }}
+            />
+          </div>
+          <Input
+            required
             type="text"
-            name="capacity"
-            placeholder="100,400,1000"
-            id="capacity"
-            onChange={(e) => {
-              setCapacityInput(e.target.value);
-            }}
+            id="ticketType"
+            name="ticketType"
+            placeholder="VIP, GENERAL, X"
+            className="text-md text-figma-400 mt-8 rounded-md"
+            setValue={setTicketTypeInput}
+            label="Ticket Types"
           />
         </div>
         <div>
+          <Input
+            required
+            type="datetime-local"
+            id="date"
+            name=""
+            placeholder=""
+            className="text-sm rounded-md text-figma-400 mt-8"
+            setValue={setDate}
+            label="Event Date"
+          />
+        </div>
+        <div className="flex flex-col">
           <label
             htmlFor="formFile"
             className="inline-block mb-2 text-figma-400"
@@ -222,7 +237,11 @@ export default function NewEvent() {
           </label>
           <input
             required
-            className="block w-full px-3 py-1.5 text-base font-normal text-figma-400 bg-white bg-clip-padding border border-solid border-gray-300 rounded-lg transition ease-in-out m-0 focus:text-figma-400 focus:bg-white focus:border-blue-600 focus:outline-none lg:border-0 lg:bg-figma-200"
+            className="file:mr-4 file:py-2 file:px-4
+            file:rounded-md file:border-0
+            file:text-sm file:font-semibold
+            file:bg-white file:text-figma-500
+            hover:file:bg-figma-500 hover:file:text-figma-400 text-figma-400"
             type="file"
             id="formFile"
             multiple

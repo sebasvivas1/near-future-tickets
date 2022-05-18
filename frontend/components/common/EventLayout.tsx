@@ -7,10 +7,10 @@ import Footer from './Footer';
 import MobileNav from './MobileNav';
 import Navbar from './Navbar';
 
-interface LayoutProps {
+interface EventLayoutProps {
   children: React.ReactNode;
 }
-export default function Layout({ children }: LayoutProps) {
+export default function EventLayout({ children }: EventLayoutProps) {
   const [nearContext, setNearContext] = useNear();
   const [user, setUser] = useUser();
   const router = useRouter();
@@ -18,7 +18,6 @@ export default function Layout({ children }: LayoutProps) {
   const setNEARContext = async () => {
     const near = await initContract();
     setNearContext(await near);
-
     try {
       const userId = await near.walletConnection.getAccountId();
       if (typeof userId == 'string') {
@@ -54,7 +53,6 @@ export default function Layout({ children }: LayoutProps) {
         <MobileNav />
       </div>
       {children}
-      <Footer />
     </div>
   );
 }

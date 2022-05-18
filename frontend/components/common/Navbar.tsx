@@ -37,10 +37,16 @@ export default function Navbar() {
   }, []);
 
   return (
-    <div className="min-w-full text-figma-400 p-4 text-lg self-center h-auto">
+    <div className="min-w-full text-figma-400 px-4 py-2 text-lg self-center h-auto">
       <div className="flex justify-between">
         <div className="self-center">
-          <h2 className="drop-shadow-md text-3xl">NEAR Future Tickets</h2>
+          {/* <h2 className="drop-shadow-md text-3xl">NEAR Future Tickets</h2> */}
+          <img
+            src="/logo_horizontal.png"
+            alt=""
+            className="w-52 cursor-pointer"
+            onClick={() => router.push('/app')}
+          />
         </div>
         <div className="self-center">
           <div className="flex space-x-24">
@@ -85,7 +91,7 @@ export default function Navbar() {
             events={events}
           />
         </div>
-        <div>
+        <div className="flex self-center">
           {user === '' ? (
             <div>
               <button

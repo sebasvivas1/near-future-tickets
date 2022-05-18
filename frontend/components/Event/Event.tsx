@@ -41,12 +41,12 @@ export default function EventData({ event }: EventProps) {
   return (
     <div className="min-h-screen lg:flex lg:flex-col">
       <div className="mb-28">
-        <div className="lg:flex lg:justify-between lg:w-full lg:h-auto lg:p-8">
+        <div className="lg:flex lg:justify-between lg:w-full lg:h-auto lg:p-8 bg-bg-event">
           <div className="text-figma-300">
             <h2 className="lg:text-9xl font-semibold">{event?.name}</h2>
             <h2 className="lg:text-2xl ">{event?.description}</h2>
           </div>
-          <div className="lg:w-1/4">
+          <div className="lg:w-1/3">
             <img src={event?.banner} alt={event?.name} className="rounded-xl" />
           </div>
         </div>
@@ -141,9 +141,6 @@ export default function EventData({ event }: EventProps) {
                       type="button"
                       className="lg:px-4 lg:py-1.5 rounded-lg bg-figma-500 text-figma-400"
                       onClick={() => buyTicket(ticketType, true, receiver)}
-                      // onClick={() => {
-                      //   setReceiver(user), console.log(receiver);
-                      // }}
                     >
                       Buy for me
                     </button>
