@@ -62,6 +62,7 @@ pub struct TokenSeries {
     tokens: UnorderedSet<TokenId>,
     is_mintable: bool,
     royalty: HashMap<AccountId, u32>,
+    price: Option<Balance>,
 }
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
@@ -72,6 +73,27 @@ pub struct TokenSeriesJson {
 	creator_id: AccountId,
     is_mintable: bool,
     // royalty: HashMap<AccountId, u32>,
+}
+
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone)]
+#[serde(crate = "near_sdk::serde")]
+pub struct MarketJson {
+    token_series_id: TokenSeriesId,
+    metadata: TokenMetadata,
+    creator_id: AccountId,
+    price: Balance,
+    royalty: HashMap<AccountId, u32>,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct MarketView {
+    token_series_id: TokenSeriesId,
+    metadata: TokenMetadata,
+    creator_id: AccountId,
+    price: Balance,
+    royalty: HashMap<AccountId, u32>,
+    copy: i64,
 }
 
 #[near_bindgen]
@@ -98,6 +120,8 @@ pub struct Contract {
 
     // Stores all created Tickets
     token_series_by_id: UnorderedMap<TokenSeriesId, TokenSeries>,
+
+    marketplace: UnorderedMap<TokenSeriesId, MarketJson>,
 }
 
 /// Helper structure for keys of the persistent collections.
@@ -156,6 +180,7 @@ impl Contract {
                 Some(&metadata),
             ),
             token_series_by_id: UnorderedMap::new(StorageKey::TokenSeriesById),
+            marketplace: UnorderedMap::new(b"0".to_vec()),
         };
 this
     }
@@ -173,6 +198,7 @@ this
         banner: String,
         ticket_type: Vec<String>,
         ticket_banners: Vec<String>,
+        price: Vec<U128>,
         //we add an optional parameter for perpetual royalties
         perpetual_royalties: Option<HashMap<AccountId, u32>>,
      ) -> Event {
@@ -210,6 +236,8 @@ this
             }
         }
 
+        
+
         let mut total_capacity = 0;
 
         for (i, _x) in ticket_type.iter().enumerate() {
@@ -217,6 +245,7 @@ this
             let token_series_id = format!("{}", (self.token_series_by_id.len() + 1));
 
             let title = name.clone();
+            let price = Some(price[i].clone().0);
             metadata.copies = Some(U64(capacity[i].into()).0);
             total_capacity += capacity[i];
             metadata.media = Some(ticket_banners[i].clone());
@@ -234,6 +263,15 @@ this
                     .unwrap(),
                 ),
                 is_mintable: true,
+                price: price,
+                royalty: royalty.clone(),
+            });
+
+            self.marketplace.insert(&token_series_id, &MarketJson{
+                token_series_id: token_series_id.to_string(),
+                metadata: metadata.clone(),
+                creator_id: caller.clone(),
+                price: price.unwrap(),
                 royalty: royalty.clone(),
             });
 
@@ -260,6 +298,7 @@ this
             ticket_type: ticket_type,
             tickets: children_token_map,
         };
+
         self.events.insert(&event.index, &event);
         let required_storage_in_bytes = env::storage_usage() - initial_storage_usage;
         refund_deposit(required_storage_in_bytes);
