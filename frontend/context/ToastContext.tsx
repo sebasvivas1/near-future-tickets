@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { v4 as uuid } from 'uuid';
+// import { v4 as uuid } from 'uuid';
 import Toast from '../components/common/Toast';
 
 type TToastContext = {
@@ -19,15 +19,15 @@ interface ToastContextProvider {
 function ToastContextProvider({ children }: ToastContextProvider) {
   const [alerts, setAlerts] = React.useState([]);
   const notify = (content = '', type = '', err = null) => {
-    const id = uuid();
+    // const id = uuid();
     setAlerts((_alerts) => [
       ..._alerts,
       {
         content,
         type,
-        id,
+        // id,
         timeOut: setTimeout(() => {
-          setAlerts((__alerts) => __alerts.filter((alert) => alert.id !== id));
+          setAlerts((__alerts) => __alerts.filter((alert) => alert.id));
         }, 5000),
       },
     ]);
