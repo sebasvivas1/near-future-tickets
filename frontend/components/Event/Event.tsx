@@ -95,17 +95,10 @@ export default function EventData({ event }: EventProps) {
               <h2>17 Apr 2022</h2>
             </div>
             <div>
-              <h2 className="text-figma-500">Date</h2>
-              <h2>17 Apr 2022</h2>
+              <h2 className="text-figma-500">Price</h2>
+              <h2>4/7/14 NEAR</h2>
             </div>
-            <div>
-              <h2 className="text-figma-500">Date</h2>
-              <h2>17 Apr 2022</h2>
-            </div>
-            <div>
-              <h2 className="text-figma-500">Date</h2>
-              <h2>17 Apr 2022</h2>
-            </div>
+
             <div>
               <button
                 type="button"
