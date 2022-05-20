@@ -19,7 +19,7 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <div>
+    <div className="lg:mt-24">
       {events.length > 0 ? (
         <div>
           <div>

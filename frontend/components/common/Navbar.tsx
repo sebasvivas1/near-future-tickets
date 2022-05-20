@@ -3,7 +3,7 @@ import React from 'react';
 import { useNear } from '../../hooks/useNear';
 import useUser from '../../hooks/useUser';
 import Event from '../../models/Event';
-import { LogOutIcon } from '../icons';
+import { LogOutIcon, SunIcon, UserIcon } from '../icons';
 import { initContract } from '../near/near';
 import SearchBar from './SearchBar';
 
@@ -12,6 +12,7 @@ export default function Navbar() {
   const [nearContext] = useNear();
   const [user, setUser] = useUser();
   const [events, setEvents] = React.useState<Array<Event>>(null);
+  const [isOpen, setIsOpen] = React.useState(false);
 
   const currentPage = router.route;
 
@@ -37,10 +38,9 @@ export default function Navbar() {
   }, []);
 
   return (
-    <div className="min-w-full text-figma-400 px-4 py-2 text-lg self-center h-auto">
+    <div className="min-w-full text-figma-400 px-4 py-2 text-lg self-center h-auto fixed top-0 z-50 bg-figma-200">
       <div className="flex justify-between">
         <div className="self-center">
-          {/* <h2 className="drop-shadow-md text-3xl">NEAR Future Tickets</h2> */}
           <img
             src="/logo_horizontal.png"
             alt=""
@@ -50,7 +50,11 @@ export default function Navbar() {
         </div>
         <div className="self-center">
           <div className="flex space-x-24">
-            <button type="button" onClick={() => router.push('/app')}>
+            <button
+              type="button"
+              onClick={() => router.push('/app')}
+              className="hover:bg-figma-100/[.2] p-4"
+            >
               <h2
                 className={`font-semibold ${
                   currentPage === '/app'
@@ -61,7 +65,11 @@ export default function Navbar() {
                 Home
               </h2>
             </button>
-            <button type="button" onClick={() => router.push('/app/events')}>
+            <button
+              type="button"
+              onClick={() => router.push('/app/events')}
+              className="hover:bg-figma-100/[.2] p-4"
+            >
               <h2
                 className={`font-semibold ${
                   currentPage === '/app/events'
@@ -72,7 +80,11 @@ export default function Navbar() {
                 All Events
               </h2>
             </button>
-            <button type="button" onClick={() => router.push('/app/profile')}>
+            <button
+              type="button"
+              onClick={() => router.push('/app/profile')}
+              className="hover:bg-figma-100/[.2] p-4"
+            >
               <h2
                 className={`font-semibold ${
                   currentPage === '/app/profile'
@@ -91,38 +103,50 @@ export default function Navbar() {
             events={events}
           />
         </div>
+        <div className="flex justify-center align-middle hover:bg-figma-100/[.2] px-4 hover:cursor-pointer">
+          <SunIcon className="w-7" />
+        </div>
         <div className="flex self-center">
           {user === '' ? (
+            <button
+              className="bg-figma-500 w-full rounded-lg px-6 py-1.5 hover:bg-figma-500/[.9] "
+              onClick={logIn}
+            >
+              Login
+            </button>
+          ) : (
             <div>
               <button
-                type="button"
-                className="bg-figma-500 text-figma-400 font-semibold w-full h-auto px-6 py-2 rounded-lg"
+                className="hover:bg-figma-100/[.2] p-4 hover:text-figma-500"
                 onClick={() => {
-                  logIn();
+                  setIsOpen(!isOpen);
                 }}
               >
-                Login
+                <UserIcon className="w-9" />
               </button>
-            </div>
-          ) : (
-            <div className="flex self-center">
-              <span className="bg-figma-500 text-figma-400 font-semibold w-full h-auto px-6 py-2 rounded-lg">
-                {user}
-              </span>
-
-              <div className="align-middle">
-                <button
-                  className=" hover:text-gray-400 text-white w-7 h-full ml-3"
-                  onClick={() => {
-                    logOut();
-                  }}
-                >
-                  <LogOutIcon />
-                </button>
-              </div>
             </div>
           )}
         </div>
+      </div>
+      <div>
+        {isOpen ? (
+          <div className="text-figma-300 text-lg flex justify-end w-full">
+            <div className="w-1/6 bg-figma-200 p-4">
+              <div className="px-6">
+                <h2 className="mt-2">{user}</h2>
+              </div>
+              <div
+                className="px-6 hover:text-figma-500 hover:cursor-pointer"
+                onClick={() => {
+                  setIsOpen(false);
+                  logOut();
+                }}
+              >
+                <h2 className="mt-2">Logout</h2>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
