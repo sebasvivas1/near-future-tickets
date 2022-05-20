@@ -7,6 +7,7 @@ import { initContract } from '../near/near';
 import TokenSeriesJson from '../../models/TokenSeriesJson';
 import GiftIcon from '../icons/GiftIcon';
 import { Input } from '../inputs/Input';
+import { ONE_NEAR_IN_YOCTO } from '../utils';
 
 interface EventProps {
   event: Event;
@@ -18,7 +19,6 @@ export default function EventData({ event }: EventProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [receiver, setReceiver] = React.useState(user);
   const [asGift, setAsGif] = React.useState(false);
-  const [gas, setGas] = React.useState<string>('');
 
   const buyTicket = async (
     ticket: TokenSeriesJson,
@@ -28,8 +28,6 @@ export default function EventData({ event }: EventProps) {
     if (forMe) {
       setReceiver(user);
     }
-    const x = ticket?.price;
-    setGas(BigInt(x).toString());
     const { contracts } = await initContract();
     // @ts-ignore: Unreachable code error
     await contracts.nftContract.mint_ticket(
@@ -130,7 +128,10 @@ export default function EventData({ event }: EventProps) {
               <div>
                 <h2>
                   {ticketType?.metadata?.title || 'No Ticket'} Price:{' '}
-                  {BigInt(ticketType?.price).toString()}
+                  {Math.round(
+                    (ticketType?.price / ONE_NEAR_IN_YOCTO + Number.EPSILON) *
+                      100
+                  ) / 100}
                 </h2>
               </div>
               <div>
