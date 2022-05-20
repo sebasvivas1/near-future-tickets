@@ -18,6 +18,7 @@ export default function EventData({ event }: EventProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [receiver, setReceiver] = React.useState(user);
   const [asGift, setAsGif] = React.useState(false);
+  const [gas, setGas] = React.useState<string>('');
 
   const buyTicket = async (
     ticket: TokenSeriesJson,
@@ -27,6 +28,8 @@ export default function EventData({ event }: EventProps) {
     if (forMe) {
       setReceiver(user);
     }
+    const x = ticket?.price;
+    setGas(BigInt(x).toString());
     const { contracts } = await initContract();
     // @ts-ignore: Unreachable code error
     await contracts.nftContract.mint_ticket(
@@ -35,7 +38,7 @@ export default function EventData({ event }: EventProps) {
         receiver_id: receiver,
       },
       '300000000000000',
-      '15000000000000000000000000'
+      BigInt(ticket?.price + 465000000000000000000000).toString()
     );
   };
   return (
@@ -127,7 +130,7 @@ export default function EventData({ event }: EventProps) {
               <div>
                 <h2>
                   {ticketType?.metadata?.title || 'No Ticket'} Price:{' '}
-                  {ticketType?.price}
+                  {BigInt(ticketType?.price).toString()}
                 </h2>
               </div>
               <div>
