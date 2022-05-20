@@ -37,6 +37,8 @@ pub const NFT_STANDARD_NAME: &str = "nep171";
 
 pub type TokenSeriesId = String;
 
+pub const TREASURY_FEE: u128 = 500;
+
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Event {
@@ -122,6 +124,9 @@ pub struct Contract {
     token_series_by_id: UnorderedMap<TokenSeriesId, TokenSeries>,
 
     marketplace: UnorderedMap<TokenSeriesId, MarketJson>,
+
+    // Treasury
+    treasury: AccountId,
 }
 
 /// Helper structure for keys of the persistent collections.
@@ -148,9 +153,10 @@ pub enum StorageKey {
 #[near_bindgen]
 impl Contract {
     #[init]
-    pub fn new_default_meta(owner_id: AccountId) -> Self {
+    pub fn new_default_meta(owner_id: AccountId, treasury: AccountId) -> Self {
         Self::new(
             owner_id,
+            treasury,
             NFTContractMetadata {
                 spec: NFT_METADATA_SPEC.to_string(),
                 name: "NEAR Future Tickets Marketplace".to_string(),
@@ -164,7 +170,7 @@ impl Contract {
     }
 
     #[init]
-    pub fn new(owner_id: AccountId, metadata: NFTContractMetadata) -> Self {
+    pub fn new(owner_id: AccountId, treasury: AccountId, metadata: NFTContractMetadata) -> Self {
         require!(!env::state_exists(), "Already initialized");
         let this = Self {
             tokens: NonFungibleToken::new(StorageKey::NonFungibleToken, owner_id.clone(), Some(StorageKey::TokenMetadata), Some(StorageKey::Enumeration), Some(StorageKey::Approval),),
@@ -181,6 +187,7 @@ impl Contract {
             ),
             token_series_by_id: UnorderedMap::new(StorageKey::TokenSeriesById),
             marketplace: UnorderedMap::new(b"0".to_vec()),
+            treasury: treasury,
         };
 this
     }
@@ -236,7 +243,7 @@ this
             }
         }
 
-        
+
 
         let mut total_capacity = 0;
 
@@ -301,7 +308,7 @@ this
 
         self.events.insert(&event.index, &event);
         let required_storage_in_bytes = env::storage_usage() - initial_storage_usage;
-        refund_deposit(required_storage_in_bytes);
+        refund_deposit(required_storage_in_bytes, 0);
 
         event
     }
@@ -312,9 +319,17 @@ this
         token_series_id: TokenSeriesId,
         receiver_id: AccountId
     ) -> TokenId {
-        self.token_series_by_id.get(&token_series_id).expect("Token series not exist");
-        // assert_eq!(env::predecessor_account_id(), token_series.creator_id, "not creator");
+        let initial_storage_usage = env::storage_usage();
+        let attached_deposit = env::attached_deposit();
+        let token_series = self.token_series_by_id.get(&token_series_id).expect("Token doesnt exist");
+        let price: u128 = token_series.price.unwrap();
+        assert!(attached_deposit >= price, "attached deposit doesnt cover the price of the ticket: {}", price);
         let token_id: TokenId = self._nft_mint_series(token_series_id, receiver_id);
+        let treasury_fee = price as u128 * TREASURY_FEE / 10_000u128;
+        let price_deducted = price - treasury_fee;
+        Promise::new(token_series.creator_id).transfer(price_deducted);
+        Promise::new(self.treasury.clone()).transfer(treasury_fee);
+        refund_deposit(env::storage_usage()-initial_storage_usage, price);
         token_id
     }
 
