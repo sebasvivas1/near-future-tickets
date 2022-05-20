@@ -37,7 +37,7 @@ pub const NFT_STANDARD_NAME: &str = "nep171";
 
 pub type TokenSeriesId = String;
 
-pub const TREASURY_FEE: u128 = 500;
+pub const TREASURY_FEE: u128 = 300;
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -74,29 +74,10 @@ pub struct TokenSeriesJson {
 	metadata: TokenMetadata,
 	creator_id: AccountId,
     is_mintable: bool,
+    price: Option<Balance>,
     // royalty: HashMap<AccountId, u32>,
 }
 
-#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone)]
-#[serde(crate = "near_sdk::serde")]
-pub struct MarketJson {
-    token_series_id: TokenSeriesId,
-    metadata: TokenMetadata,
-    creator_id: AccountId,
-    price: Balance,
-    royalty: HashMap<AccountId, u32>,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct MarketView {
-    token_series_id: TokenSeriesId,
-    metadata: TokenMetadata,
-    creator_id: AccountId,
-    price: Balance,
-    royalty: HashMap<AccountId, u32>,
-    copy: i64,
-}
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
@@ -122,8 +103,6 @@ pub struct Contract {
 
     // Stores all created Tickets
     token_series_by_id: UnorderedMap<TokenSeriesId, TokenSeries>,
-
-    marketplace: UnorderedMap<TokenSeriesId, MarketJson>,
 
     // Treasury
     treasury: AccountId,
@@ -186,7 +165,6 @@ impl Contract {
                 Some(&metadata),
             ),
             token_series_by_id: UnorderedMap::new(StorageKey::TokenSeriesById),
-            marketplace: UnorderedMap::new(b"0".to_vec()),
             treasury: treasury,
         };
 this
@@ -274,19 +252,12 @@ this
                 royalty: royalty.clone(),
             });
 
-            self.marketplace.insert(&token_series_id, &MarketJson{
-                token_series_id: token_series_id.to_string(),
-                metadata: metadata.clone(),
-                creator_id: caller.clone(),
-                price: price.unwrap(),
-                royalty: royalty.clone(),
-            });
-
             children_token_map.push(TokenSeriesJson{
                 metadata: metadata.clone(),
                 creator_id: caller.clone(),
                 is_mintable: true,
                 token_series_id,
+                price: price,
             });
         }
 
@@ -504,6 +475,7 @@ this
                 metadata: token_series.metadata,
                 creator_id: token_series.creator_id,
                 is_mintable: token_series.is_mintable,
+                price: token_series.price,
             })
             .collect()
     }

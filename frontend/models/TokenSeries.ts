@@ -5,5 +5,6 @@ export default interface TokenSeries {
   creator_id: string;
   // tokens:
   is_mintable: boolean;
+  price: number;
   // royalty:
 }

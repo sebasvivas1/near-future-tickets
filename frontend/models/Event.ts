@@ -16,5 +16,6 @@ export default interface Event {
   ticket_banners?: Array<string>;
   tickets?: Array<TokenSeriesJson>;
   token_metadata?: TokenMetada;
+  price?: Array<number>;
   // perpetual_royalties: ;
 }

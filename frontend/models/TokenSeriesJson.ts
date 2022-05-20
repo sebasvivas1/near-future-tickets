@@ -5,4 +5,5 @@ export default interface TokenSeriesJson {
   metadata: TokenMetadata;
   creator_id: string;
   is_mintable: boolean;
+  price?: number;
 }

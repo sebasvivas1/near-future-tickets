@@ -7,6 +7,7 @@ import Event from '../../models/Event';
 import ModalityDropdown from '../common/ModalityDropdown';
 import { Input } from '../inputs/Input';
 import useNotify from '../../hooks/useNotify';
+import { ONE_NEAR_IN_YOCTO, toFixed } from '../utils';
 
 export default function NewEvent() {
   const [name, setName] = React.useState('');
@@ -24,6 +25,8 @@ export default function NewEvent() {
   const [uploaded, setUploaded] = React.useState(false);
   const [capacityInput, setCapacityInput] = React.useState<string>('');
   const [capacity, setCapacity] = React.useState<Array<number>>();
+  const [price, setPrice] = React.useState<Array<number>>();
+  const [priceInput, setPriceInput] = React.useState<string>('');
 
   const notify = useNotify();
 
@@ -84,6 +87,7 @@ export default function NewEvent() {
         banner: event.banner,
         ticket_type: ticketType,
         ticket_banners: event.ticket_banners,
+        price: price,
       },
       '300000000000000',
       '465000000000000000000000'
@@ -108,12 +112,24 @@ export default function NewEvent() {
     console.log(ticketType);
   };
 
+  const refactorPrice = () => {
+    const arr = [];
+    const x = priceInput.split(',').map(function (item) {
+      arr.push(toFixed(Number(item) * ONE_NEAR_IN_YOCTO));
+    });
+    setPrice(arr);
+    console.log(price);
+  };
+
   React.useEffect(() => {
     if (capacityInput !== '') {
       refactorCapacity();
     }
     if (ticketTypeInput !== '') {
       refactorTicketType();
+    }
+    if (priceInput !== '') {
+      refactorPrice();
     }
   }, [capacityInput, ticketTypeInput]);
 
@@ -128,6 +144,7 @@ export default function NewEvent() {
     modality: modality,
     ticket_type: ticketType,
     ticket_banners: ticketBanners,
+    price: price,
     token_metadata: {},
   };
 
@@ -215,6 +232,20 @@ export default function NewEvent() {
             setValue={setTicketTypeInput}
             label="Ticket Types"
           />
+          <div>
+            <h2 className="text-figma-400 mb-1">Prices in NEAR *</h2>
+            <input
+              aria-label="Price"
+              className="text-md rounded-lg"
+              type="text"
+              name="price"
+              placeholder="20,16,10"
+              id="price"
+              onChange={(e) => {
+                setPriceInput(e.target.value);
+              }}
+            />
+          </div>
         </div>
         <div>
           <Input

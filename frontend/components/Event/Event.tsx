@@ -35,7 +35,7 @@ export default function EventData({ event }: EventProps) {
         receiver_id: receiver,
       },
       '300000000000000',
-      '465000000000000000000000'
+      '15000000000000000000000000'
     );
   };
   return (
@@ -125,7 +125,10 @@ export default function EventData({ event }: EventProps) {
               className="text-figma-100 lg:flex lg:justify-between lg:mt-3"
             >
               <div>
-                <h2>{ticketType?.metadata?.title || 'No Ticket'}</h2>
+                <h2>
+                  {ticketType?.metadata?.title || 'No Ticket'} Price:{' '}
+                  {ticketType?.price}
+                </h2>
               </div>
               <div>
                 <div className="flex justify-between">
