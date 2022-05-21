@@ -7,7 +7,7 @@ export default interface Event {
   modality?: number;
   capacity?: number;
   date?: string;
-  // time?: string;
+  time?: string;
   status?: number;
   index?: number;
   banner?: string;

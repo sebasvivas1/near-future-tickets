@@ -12,6 +12,7 @@ import { ONE_NEAR_IN_YOCTO, toFixed } from '../utils';
 export default function NewEvent() {
   const [name, setName] = React.useState('');
   const [date, setDate] = React.useState('');
+  const [time, setTime] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [eventStatus, setEventStatus] = React.useState<number>(1);
   const [modality, setModality] = React.useState<number>();
@@ -82,7 +83,7 @@ export default function NewEvent() {
         modality: event.modality,
         capacity: capacity,
         date: event.date,
-        // time: event.time,
+        time: event.time,
         status: event.status,
         banner: event.banner,
         ticket_type: ticketType,
@@ -131,7 +132,7 @@ export default function NewEvent() {
     if (priceInput !== '') {
       refactorPrice();
     }
-  }, [capacityInput, ticketTypeInput]);
+  }, [capacityInput, ticketTypeInput, priceInput]);
 
   const event: Event = {
     organizer: user,
@@ -139,7 +140,7 @@ export default function NewEvent() {
     description: description,
     banner: urlArr,
     date: date,
-    // time: time,
+    time: time,
     status: eventStatus,
     modality: modality,
     ticket_type: ticketType,
@@ -147,6 +148,9 @@ export default function NewEvent() {
     price: price,
     token_metadata: {},
   };
+
+  console.log(date)
+  console.log(time)
 
   return (
     <div className="lg:flex lg:justify-center lg:items-center lg:align-middle lg:p-9 p-5 lg:min-h-screen">
@@ -230,7 +234,7 @@ export default function NewEvent() {
             placeholder="VIP, GENERAL, X"
             className="text-md text-figma-400 mt-8 rounded-md"
             setValue={setTicketTypeInput}
-            label="Ticket Types"
+            label="Ticket Types *"
           />
           <div>
             <h2 className="text-figma-400 mb-1">Prices in NEAR *</h2>
@@ -247,16 +251,26 @@ export default function NewEvent() {
             />
           </div>
         </div>
-        <div>
+        <div className="flex justify-between w-full space-x-4">
           <Input
             required
-            type="datetime-local"
+            type="date"
             id="date"
-            name=""
-            placeholder=""
-            className="text-sm rounded-md text-figma-400 mt-8"
+            name="date"
+            placeholder={date}
+            className="h-8 text-sm rounded-lg text-figma-400 mt-8"
             setValue={setDate}
-            label="Event Date"
+            label="Event Date *"
+          />
+          <Input
+            required
+            type="time"
+            id="time"
+            name="time"
+            placeholder={time}
+            className="h-8 text-sm rounded-lg text-figma-400 mt-8"
+            setValue={setTime}
+            label="Hour *"
           />
         </div>
         <div className="flex flex-col">

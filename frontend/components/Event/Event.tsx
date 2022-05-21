@@ -19,6 +19,22 @@ export default function EventData({ event }: EventProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [receiver, setReceiver] = React.useState(user);
   const [asGift, setAsGif] = React.useState(false);
+  const [month, setMonth] = React.useState('');
+  const [day, setDay] = React.useState('');
+  const [year, setYear] = React.useState('');
+
+  const formatDate = () => {
+    const x: Date = new Date(event?.date);
+    const mon = x.toLocaleString('default', { month: 'long' });
+    setMonth(mon);
+    const y = event?.date?.split('-');
+    setDay(y[2]);
+    setYear(y[0]);
+  };
+
+  React.useEffect(() => {
+    formatDate();
+  }, []);
 
   const buyTicket = async (
     ticket: TokenSeriesJson,
@@ -40,14 +56,14 @@ export default function EventData({ event }: EventProps) {
     );
   };
   return (
-    <div className="min-h-screen lg:flex lg:flex-col">
+    <div className="min-h-screen lg:flex lg:flex-col lg:mt-24">
       <div className="mb-28">
         <div className="lg:flex lg:justify-between lg:w-full lg:h-auto lg:p-8 bg-bg-event">
-          <div className="text-figma-300">
-            <h2 className="lg:text-9xl font-semibold">{event?.name}</h2>
-            <h2 className="lg:text-2xl ">{event?.description}</h2>
+          <div className="text-figma-300 lg:w-6/12">
+            <h2 className="lg:text-7xl font-semibold">{event?.name}</h2>
+            <h2 className="lg:text-2xl mt-4">{event?.description}</h2>
           </div>
-          <div className="lg:w-1/3">
+          <div className="lg:w-5/12">
             <img src={event?.banner} alt={event?.name} className="rounded-xl" />
           </div>
         </div>
@@ -93,7 +109,13 @@ export default function EventData({ event }: EventProps) {
           <div className="lg:flex lg:justify-between">
             <div>
               <h2 className="text-figma-500">Date</h2>
-              <h2>17 Apr 2022</h2>
+              <h2>
+                {day} {month} {year}
+              </h2>
+            </div>
+            <div>
+              <h2 className="text-figma-500">Time</h2>
+              <h2>{event?.time}</h2>
             </div>
             <div>
               <h2 className="text-figma-500">Price</h2>
