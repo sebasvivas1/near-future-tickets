@@ -23,8 +23,8 @@ export default function Events() {
       {events.length > 0 ? (
         <div>
           <div className="p-4 lg:p-8">
-            <div className="flex justify-between h-full lg:px-9">
-              <h2 className="text-figma-400 font-semibold lg:text-2xl lg:self-center">
+            <div className="flex justify-between h-full lg:px-9 md:px-8 xl:px-0 2xl:px-9 3xl:px-2">
+              <h2 className="text-figma-400 font-semibold lg:text-2xl lg:self-center text-lg">
                 Upcoming Events
               </h2>
               <button
@@ -35,7 +35,7 @@ export default function Events() {
                 New Event
               </button>
             </div>
-            <div className="lg:grid lg:grid-cols-3 lg:justify-items-center lg:mt-8">
+            <div className="flex flex-col self-center items-center md:grid md:grid-cols-2 md:justify-items-center md:gap-2 lg:mt-8 xl:grid-cols-3 xl:gap-8 2xl:grid-cols-3 3xl:grid-cols-4">
               {events.map((event, i) => (
                 <div className="" key={i}>
                   <EventCard data={event} key={i} />
@@ -50,7 +50,7 @@ export default function Events() {
             <Carousel />
           </div> */}
           <div className="p-4 lg:p-8">
-            <div className="flex justify-between h-full lg:px-9">
+            <div className="flex justify-between h-full lg:px-9 md:px-8 xl:px-0 2xl:px-9">
               <h2 className="text-figma-400 font-semibold lg:text-2xl lg:self-center">
                 Loading Events...
               </h2>
@@ -62,7 +62,7 @@ export default function Events() {
                 New Event
               </button>
             </div>
-            <div className="lg:grid lg:grid-cols-3 lg:justify-items-center lg:mt-8">
+            <div className="flex flex-col self-center items-center md:grid md:grid-cols-2 md:justify-items-center md:gap-2 lg:mt-8 xl:grid-cols-3 xl:gap-8 2xl:grid-cols-3">
               <div className="">
                 <EventCard />
               </div>
