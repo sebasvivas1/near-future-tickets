@@ -26,19 +26,19 @@ export default function Home() {
             <Carousel />
           </div>
           <div className="p-4 lg:p-8">
-            <div className="flex justify-between h-full lg:px-9">
-              <h2 className="text-figma-400 font-semibold lg:text-2xl lg:self-center">
+            <div className="flex justify-between h-full lg:px-9 md:px-8 xl:px-0 2xl:px-9 3xl:px-2">
+              <h2 className="text-figma-400 font-semibold lg:text-2xl lg:self-center text-lg md:text-2xl">
                 Upcoming Events
               </h2>
               <button
                 type="button"
-                className="bg-figma-500 text-figma-400 px-4 py-1.5 rounded-lg lg:px-6 lg:py-2 lg:text-xl hover:bg-figma-300 hover:text-figma-500 transition duration-700 hover:duration-300"
+                className="bg-figma-500 text-figma-400 px-4 py-1.5 rounded-lg lg:px-6 lg:py-2 lg:text-xl hover:bg-figma-300 hover:text-figma-500 transition duration-700 hover:duration-300 md:text-lg"
                 onClick={() => router.push('/app/new')}
               >
                 New Event
               </button>
             </div>
-            <div className="lg:grid lg:grid-cols-3 lg:justify-items-center lg:mt-8">
+            <div className="flex flex-col self-center items-center md:grid md:grid-cols-2 md:justify-items-center md:gap-2 lg:mt-8 xl:grid-cols-3 xl:gap-8 2xl:grid-cols-3 3xl:grid-cols-4">
               {events.map((event, i) => (
                 <div className="" key={i}>
                   <EventCard data={event} key={i} />
