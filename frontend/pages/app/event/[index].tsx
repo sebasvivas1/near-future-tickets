@@ -4,6 +4,7 @@ import { initContract } from '../../../components/near/near';
 import Event from '../../../models/Event';
 import EventData from '../../../components/Event/Event';
 import EventLayout from '../../../components/common/EventLayout';
+import { Seo } from '../../../components/Seo/Seo';
 
 export default function EventDetails() {
   const router = useRouter();
@@ -23,6 +24,13 @@ export default function EventDetails() {
   }, [event]);
 
   return (
-    <EventLayout>{event ? <EventData event={event} /> : null}</EventLayout>
+    <EventLayout>
+      <Seo
+        metaTitle={event?.name}
+        metaDescription={event?.description}
+        shareImage={event?.banner}
+      />
+      {event ? <EventData event={event} /> : null}
+    </EventLayout>
   );
 }
