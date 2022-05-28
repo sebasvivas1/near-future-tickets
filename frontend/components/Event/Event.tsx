@@ -8,11 +8,20 @@ import TokenSeriesJson from '../../models/TokenSeriesJson';
 import GiftIcon from '../icons/GiftIcon';
 import { Input } from '../inputs/Input';
 import { ONE_NEAR_IN_YOCTO } from '../utils';
+import { useJsApiLoader, GoogleMap, Marker } from '@react-google-maps/api';
+import Geocode from 'react-geocode';
 
 interface EventProps {
   event: Event;
 }
-
+type Libraries = (
+  | 'drawing'
+  | 'geometry'
+  | 'localContext'
+  | 'places'
+  | 'visualization'
+)[];
+const libraries: Libraries = ['places'];
 export default function EventData({ event }: EventProps) {
   const router = useRouter();
   const [user] = useUser();
@@ -22,6 +31,9 @@ export default function EventData({ event }: EventProps) {
   const [month, setMonth] = React.useState('');
   const [day, setDay] = React.useState('');
   const [year, setYear] = React.useState('');
+  const [center, setCenter] = React.useState({ lat: 0, lng: 0 });
+
+  Geocode.setApiKey(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
 
   const formatDate = () => {
     const x: Date = new Date(event?.date);
@@ -31,6 +43,13 @@ export default function EventData({ event }: EventProps) {
     setDay(y[2]);
     setYear(y[0]);
   };
+
+  // Maps
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+    libraries,
+  });
+  // const center = React.useMemo(() => ({ lat: 48.8584, lng: 2.2945 }), []);
 
   React.useEffect(() => {
     formatDate();
@@ -55,6 +74,32 @@ export default function EventData({ event }: EventProps) {
       BigInt(ticket?.price + 465000000000000000000000).toString()
     );
   };
+
+  const refactorLocation = async (location) => {
+    const L = {
+      lat: 0,
+      lng: 0,
+    };
+    await Geocode.fromAddress(location).then(
+      (resp) => {
+        const { lat, lng } = resp.results[0].geometry.location;
+        L.lat = lat;
+        L.lng = lng;
+        setCenter(L);
+      },
+      (err) => {
+        console.log(err);
+      }
+    );
+  };
+
+  React.useEffect(() => {
+    if (event?.location !== '' || null) {
+      const location = event?.location;
+      refactorLocation(location);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen lg:flex lg:flex-col lg:mt-24">
       <div className="mb-28">
@@ -97,12 +142,32 @@ export default function EventData({ event }: EventProps) {
                 </button>
               </div>
             ) : (
-              <div className="bg-figma-500 rounded-2xl lg:w-96 lg:h-36 lg:p-5">
+              <div className="bg-figma-500 rounded-2xl lg:w-96 lg:h-36 lg:p-5 ">
                 <h2 className="text-xl">Organizer: {event?.organizer}</h2>
               </div>
             )}
           </div>
         </div>
+        {isLoaded ? (
+          <div className="px-6 mb-8">
+            <h2 className="text-figma-300 ">{event?.location}</h2>
+            <GoogleMap
+              center={center}
+              zoom={16}
+              mapContainerClassName="w-96 h-48 rounded-xl"
+              options={{
+                streetViewControl: false,
+                mapTypeControl: false,
+              }}
+            >
+              <Marker position={center} />
+            </GoogleMap>
+          </div>
+        ) : (
+          <div>
+            <h2>map loading...</h2>
+          </div>
+        )}
       </div>
       <div className="lg:fixed lg:bottom-0 w-full">
         <div className="bg-figma-400 rounded-t-2xl lg:py-7 lg:px-11 lg:text-center">

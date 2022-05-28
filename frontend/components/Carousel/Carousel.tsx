@@ -13,7 +13,7 @@ export default function CarouselComponent() {
   const getEvents = async () => {
     const { contracts } = await initContract();
     // @ts-ignore: Unreachable code error
-    setEvents(await contracts.nftContract.get_events());
+    setEvents(await contracts?.nftContract?.get_events());
     const featuredEventss: Array<Event> = [];
     if (events) {
       for (let index = 0; index < events.length; index++) {

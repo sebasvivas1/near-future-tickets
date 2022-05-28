@@ -8,6 +8,16 @@ import ModalityDropdown from '../common/ModalityDropdown';
 import { Input } from '../inputs/Input';
 import useNotify from '../../hooks/useNotify';
 import { ONE_NEAR_IN_YOCTO, toFixed } from '../utils';
+import { useJsApiLoader, Autocomplete } from '@react-google-maps/api';
+
+type Libraries = (
+  | 'drawing'
+  | 'geometry'
+  | 'localContext'
+  | 'places'
+  | 'visualization'
+)[];
+const libraries: Libraries = ['places'];
 
 export default function NewEvent() {
   const [name, setName] = React.useState('');
@@ -28,8 +38,15 @@ export default function NewEvent() {
   const [capacity, setCapacity] = React.useState<Array<number>>();
   const [price, setPrice] = React.useState<Array<number>>();
   const [priceInput, setPriceInput] = React.useState<string>('');
+  const [locationResponse, setLocationResponse] = React.useState('');
 
   const notify = useNotify();
+
+  // Maps
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+    libraries,
+  });
 
   // @ts-ignore: Unreachable code error
   const client = create('https://ipfs.infura.io:5001/api/v0');
@@ -89,6 +106,7 @@ export default function NewEvent() {
         ticket_type: ticketType,
         ticket_banners: event.ticket_banners,
         price: price,
+        location: event.location,
       },
       '300000000000000',
       '465000000000000000000000'
@@ -146,11 +164,11 @@ export default function NewEvent() {
     ticket_type: ticketType,
     ticket_banners: ticketBanners,
     price: price,
+    location: locationResponse,
     token_metadata: {},
   };
 
-  console.log(date)
-  console.log(time)
+  console.log(locationResponse);
 
   return (
     <div className="lg:flex lg:justify-center lg:items-center lg:align-middle lg:p-9 p-5 lg:min-h-screen">
@@ -210,6 +228,27 @@ export default function NewEvent() {
         <div className="w-full">
           <h2 className="text-figma-400">Modality *</h2>
           <ModalityDropdown modality={modality} setModality={setModality} />
+        </div>
+        <div>
+          {isLoaded ? (
+            <div>
+              {modality === 1 ? (
+                <div>
+                  <Autocomplete>
+                    <Input
+                      required
+                      label="Location *"
+                      name="location"
+                      type="text"
+                      className="rounded-md mt-8"
+                      value={locationResponse}
+                      setValue={setLocationResponse}
+                    />
+                  </Autocomplete>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
         <div className="flex w-full space-x-3">
           <div>
