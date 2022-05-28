@@ -54,6 +54,7 @@ pub struct Event {
     organizer: AccountId,
     ticket_type: Vec<String>,
     tickets: Vec<TokenSeriesJson>,
+    location: String,
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
@@ -184,6 +185,7 @@ this
         ticket_type: Vec<String>,
         ticket_banners: Vec<String>,
         price: Vec<U128>,
+        location: String,
         //we add an optional parameter for perpetual royalties
         perpetual_royalties: Option<HashMap<AccountId, u32>>,
      ) -> Event {
@@ -220,8 +222,6 @@ this
                 royalty.insert(account, amount);
             }
         }
-
-
 
         let mut total_capacity = 0;
 
@@ -275,6 +275,7 @@ this
             organizer: caller,
             ticket_type: ticket_type,
             tickets: children_token_map,
+            location: location,
         };
 
         self.events.insert(&event.index, &event);

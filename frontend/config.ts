@@ -1,5 +1,5 @@
 export const nftContractName =
-  process.env.NFT_CONTRACT_NAME || 'dev-1653105015675-58151423865194';
+  process.env.NEXT_PUBLIC_NFT_CONTRACT || 'dev-1653694632586-73805328483609';
 // export const marketContractName =
 //   process.env.MARKET_CONTRACT_NAME || 'dev-1651714847073-29755330354579';
 

@@ -17,5 +17,6 @@ export default interface Event {
   tickets?: Array<TokenSeriesJson>;
   token_metadata?: TokenMetada;
   price?: Array<number>;
+  location?: string;
   // perpetual_royalties: ;
 }
