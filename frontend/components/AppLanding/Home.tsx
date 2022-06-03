@@ -4,6 +4,7 @@ import Event from '../../models/Event';
 import Carousel from '../Carousel/Carousel';
 import EventCard from '../Events/EventCard';
 import { initContract } from '../near/near';
+import { motion } from 'framer-motion';
 export default function Home() {
   const [events, setEvents] = React.useState<Array<Event>>([]);
 
@@ -40,7 +41,7 @@ export default function Home() {
             </div>
             <div className="flex flex-col self-center items-center md:grid md:grid-cols-2 md:justify-items-center md:gap-2 lg:mt-8 xl:grid-cols-3 xl:gap-8 2xl:grid-cols-3 3xl:grid-cols-4">
               {events.map((event, i) => (
-                <div className="" key={i}>
+                <div key={i}>
                   <EventCard data={event} key={i} />
                 </div>
               ))}
