@@ -234,8 +234,9 @@ this
             metadata.copies = Some(U64(capacity[i].into()).0);
             total_capacity += capacity[i];
             metadata.media = Some(ticket_banners[i].clone());
-            let ticket_title = format!("{:?}{}{}", &title , TITLE_DELIMETER , ticket_type[i].clone());
+            let ticket_title = format!("{:#?}{}{}", &title , TITLE_DELIMETER , ticket_type[i].clone());
             metadata.title = Some(ticket_title.to_string());
+             
 
             self.token_series_by_id.insert(&token_series_id, &TokenSeries{
                 metadata: metadata.clone(),
@@ -327,7 +328,7 @@ this
         let token_id = format!("{}{}{}", &token_series_id, TITLE_DELIMETER, num_tokens + 1);
         token_series.tokens.insert(&token_id);
         self.token_series_by_id.insert(&token_series_id, &token_series);
-        let title: String = format!("{:?} - {}{}{}{}", token_series.metadata.title.clone(), TITLE_DELIMETER, &token_series_id, TITLE_DELIMETER, (num_tokens + 1).to_string());
+        let title: String = format!("{:#?} - {}{}{}{}", &token_series.metadata.title, TITLE_DELIMETER, &token_series_id, TITLE_DELIMETER, (num_tokens + 1).to_string());
 
 
         let metadata = tokenmeta {
@@ -427,12 +428,6 @@ this
         let event_list = self.events.values_as_vector().to_vec();
         event_list
     }
-
-     // Get Events of a given owner
-    //  pub fn get_my_events(self, account_id: AccountId) -> Vec<Event> {
-    //     let event_list = self.events.iter().find(|x| x.organizer == account_id);
-    //     event_list
-    // }
 
     // Get one event given its id
     pub fn get_event(self, index: i128) -> Event {
