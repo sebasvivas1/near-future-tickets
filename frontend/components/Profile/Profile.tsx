@@ -1,46 +1,45 @@
 import { useRouter } from 'next/router';
 import React from 'react';
 import { useNear } from '../../hooks/useNear';
+import useUser from '../../hooks/useUser';
 import Event from '../../models/Event';
+import Token from '../../models/Token';
 import EventCard from '../Events/EventCard';
 import { initContract } from '../near/near';
+import TicketPreview from '../Ticket/TicketPreview';
 
 export default function Profile() {
-  const [events, setEvents] = React.useState<Array<Event>>([]);
-  const [nearContext, setNearContext] = useNear();
-  const [username, setUsername] = React.useState('');
+  const [tickets, setTickets] = React.useState<Array<Token>>([]);
+  const [user] = useUser();
 
-  const getEvents = async () => {
-    setNearContext(await initContract());
-    // setNearContext(await NEAR);
-    // @ts-ignore: Unreachable code error
-    setEvents(await nearContext.contracts.nftContract.get_events());
-    setUsername(nearContext.contracts.nftContract.account.accountId);
+  const getTickets = async () => {
+    const { contracts } = await initContract();
+
+    setTickets(
+      // @ts-ignore: Unreachable code error
+      await contracts.nftContract.nft_tokens_for_owner({
+        account_id: user,
+        from_index: '0',
+        limit: 200,
+      })
+    );
   };
 
   React.useEffect(() => {
-    getEvents();
-  }, [events]);
-  const router = useRouter();
-
+    getTickets();
+  }, [tickets]);
+  console.log(tickets);
   return (
     <div className="p-4 lg:p-8 min-h-screen">
-      <div className="flex justify-between h-full">
-        <h2 className="text-figma-400 font-semibold lg:text-2xl lg:self-center">
-          My Events
+      <div className="">
+        <h2 className="text-figma-400 text-xl mt-16 font-semibold lg:text-2xl lg:self-center lg:mt-24">
+          My Tickets
         </h2>
-        <button
-          type="button"
-          className="bg-figma-500 text-figma-400 px-4 py-1.5 rounded-lg lg:px-6 lg:py-2 lg:text-xl"
-          onClick={() => router.push('/app/new')}
-        >
-          New Event
-        </button>
       </div>
-      <div className="lg:flex lg:justify-between lg:w-full lg:mt-7">
-        {events.map((event, i) => (
-          <div className="flex justify-center" key={i}>
-            <EventCard data={event} key={i} />
+      <div className="mt-3 md:grid md:grid-cols-3 md:gap-3 lg:grid-cols-6">
+        {tickets.map((ticket, idx) => (
+          <div className="" key={idx}>
+            <TicketPreview ticket={ticket} />
           </div>
         ))}
       </div>

@@ -3,13 +3,15 @@ import React from 'react';
 import { useNear } from '../../hooks/useNear';
 import useUser from '../../hooks/useUser';
 import { LoginIcon } from '../icons';
+import { LogOutModal } from '../modal/LogOutModal';
 
 export default function MobileNav() {
   const router = useRouter();
+  const [user] = useUser();
   const [nearContext] = useNear();
-  const [user, setUser] = useUser();
+  const [showModal, setShowModal] = React.useState(false);
+  const [showMenu, setShowMenu] = React.useState(false);
   const currentPage = router.route;
-  const startingLetter = user.charAt(0);
 
   const logIn = async () => {
     await nearContext.walletConnection.requestSignIn(
@@ -17,75 +19,98 @@ export default function MobileNav() {
     );
   };
 
-  const logOut = async () => {
-    await setUser('');
-    await nearContext.walletConnection.signOut();
-  };
+  function onMenuClick() {
+    setShowMenu(!showMenu);
+  }
+  function onClick() {
+    setShowModal(true);
+  }
   return (
-    <div className="flex justify-between p-4">
-      <div className="self-center">
-        <h2 className="text-lg font-semibold text-figma-300">NFT</h2>
-      </div>
-      <div className="flex text-figma-300 space-x-7">
-        <button type="button" onClick={() => router.push('/app')}>
-          <h2
-            className={`font-semibold ${
-              currentPage === '/app'
-                ? 'underline underline-offset-8 decoration-figma-500 decoration-4'
-                : ''
-            }`}
-          >
-            Home
-          </h2>
-        </button>
-        <button type="button" onClick={() => router.push('/app/events')}>
-          <h2
-            className={`font-semibold ${
-              currentPage === '/app/events'
-                ? 'underline underline-offset-8 decoration-figma-500 decoration-4'
-                : ''
-            }`}
-          >
-            All Events
-          </h2>
-        </button>
-        <button type="button" onClick={() => router.push('/app/profile')}>
-          <h2
-            className={`font-semibold ${
-              currentPage === '/app/profile'
-                ? 'underline underline-offset-8 decoration-figma-500 decoration-4'
-                : ''
-            }`}
-          >
-            Profile
-          </h2>
-        </button>
-      </div>
-      {user !== '' ? (
-        <div className="">
-          <button
-            type="button"
-            className="bg-figma-500 text-figma-300 rounded-full px-2 py-px shadow-lg self-center text-lg"
-            onClick={() => {
-              logOut();
-            }}
-          >
-            {startingLetter}
-          </button>
+    <div className="w-full fixed z-50 bg-figma-200 py-2">
+      <div className="flex w-full justify-between items-center px-2">
+        <div
+          className={`menu-btn w-0 ${showMenu ? 'open' : ''}`}
+          onClick={onMenuClick}
+        >
+          <div className="menu-btn__burger"></div>
         </div>
-      ) : (
-        <div className="">
-          <button
-            type="button"
-            className=""
-            onClick={() => {
-              logIn();
-            }}
-          >
-            <LoginIcon className="w-6 h-6 text-figma-300" />
-          </button>
+
+        <div className="lg:hidden" onClick={() => router.push('/app')}>
+          <img src="/logo_horizontal.png" alt="logo" className="w-36" />
         </div>
-      )}
+        <div>
+          {user ? (
+            <div className="">
+              <button
+                onClick={() => router.push('/app/profile')}
+                className="bg-figma-300 rounded-full text-figma-300 p-4"
+              ></button>
+            </div>
+          ) : (
+            <div>
+              <button
+                className="bg-figma-100 px-2 py-1.5 text-figma-300 drop-shadow-md rounded-lg"
+                onClick={logIn}
+              >
+                Login
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+      <div>
+        {showMenu ? (
+          <div className="bg-gray-600/[.7] text-figma-400 min-h-screen flex text-lg absolute w-full">
+            <div className="px-6 bg-figma-200 w-3/4">
+              <h2
+                className={`mt-2 ${
+                  currentPage === '/app'
+                    ? 'underline underline-offset-8 decoration-figma-500 decoration-4'
+                    : ''
+                }`}
+                onClick={() => router.push('/app')}
+              >
+                Home
+              </h2>
+              <h2
+                className={`mt-2 ${
+                  currentPage === '/app/events'
+                    ? 'underline underline-offset-8 decoration-figma-500 decoration-4'
+                    : ''
+                }`}
+                onClick={() => router.push('/app/events')}
+              >
+                All Events
+              </h2>
+
+              <h2
+                className={`mt-2 ${
+                  currentPage === '/app/profile'
+                    ? 'underline underline-offset-8 decoration-figma-500 decoration-4'
+                    : ''
+                }`}
+                onClick={() => router.push('/app/profile')}
+              >
+                Profile
+              </h2>
+              {user ? (
+                <button className="mt-2" onClick={() => onClick()}>
+                  Logout
+                </button>
+              ) : (
+                <h2
+                  className="mt-2
+                  "
+                  onClick={() => logIn()}
+                >
+                  Login
+                </h2>
+              )}
+            </div>
+          </div>
+        ) : null}
+      </div>
+      <LogOutModal setOpen={setShowModal} isOpen={showModal} />
     </div>
   );
 }

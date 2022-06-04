@@ -3,12 +3,12 @@ import { useNear } from '../../hooks/useNear';
 import useUser from '../../hooks/useUser';
 import Modal from '../modal/Modal';
 
-interface AuthorModalProps {
+interface LogOutModalProps {
   isOpen: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function LogOutModal({ setOpen, isOpen }: AuthorModalProps) {
+export function LogOutModal({ setOpen, isOpen }: LogOutModalProps) {
   const [user, setUser] = useUser();
   const [nearContext] = useNear();
   const logOut = async () => {

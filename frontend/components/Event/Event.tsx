@@ -10,6 +10,7 @@ import { Input } from '../inputs/Input';
 import { ONE_NEAR_IN_YOCTO } from '../utils';
 import { useJsApiLoader, GoogleMap, Marker } from '@react-google-maps/api';
 import Geocode from 'react-geocode';
+import QRIcon from '../icons/QRIcon';
 
 interface EventProps {
   event: Event;
@@ -49,7 +50,6 @@ export default function EventData({ event }: EventProps) {
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
     libraries,
   });
-  // const center = React.useMemo(() => ({ lat: 48.8584, lng: 2.2945 }), []);
 
   React.useEffect(() => {
     formatDate();
@@ -112,7 +112,7 @@ export default function EventData({ event }: EventProps) {
             <img src={event?.banner} alt={event?.name} className="rounded-xl" />
           </div>
         </div>
-        <div className="text-figma-300 lg:p-8 lg:flex lg:justify-between">
+        <div className="text-figma-300 lg:p-8 lg:flex lg:justify-between lg:align-middle">
           <div>
             <h2 className="lg:text-3xl">Event Information</h2>
             <h2>{event?.name}</h2>
@@ -130,7 +130,17 @@ export default function EventData({ event }: EventProps) {
           </div>
           <div>
             {user === event?.organizer ? (
-              <div>
+              <div className="space-x-3">
+                <button
+                  type="button"
+                  className="bg-figma-500 lg:px-4 lg:py-1.5 text-figma-400 lg:text-lg font-semibold rounded-lg align-top"
+                  title="Verify assistant"
+                  onClick={() =>
+                    router.push(`/app/event/assistant/${event?.index}`)
+                  }
+                >
+                  <QRIcon className="w-7" />
+                </button>
                 <button
                   type="button"
                   className="bg-figma-500 lg:px-4 lg:py-1.5 text-figma-400 lg:text-lg font-semibold rounded-lg"

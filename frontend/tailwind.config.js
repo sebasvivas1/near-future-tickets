@@ -19,6 +19,9 @@ module.exports = {
       '3xl': '1806px',
     },
     extend: {
+      spacing: {
+        maxwi: '311px',
+      },
       colors: {
         primary: {
           100: '#787878',

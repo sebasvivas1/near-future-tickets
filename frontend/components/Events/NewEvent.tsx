@@ -9,6 +9,7 @@ import { Input } from '../inputs/Input';
 import useNotify from '../../hooks/useNotify';
 import { ONE_NEAR_IN_YOCTO, toFixed } from '../utils';
 import { useJsApiLoader, Autocomplete } from '@react-google-maps/api';
+import ExtraMetadata from '../../models/ExtraMetadata';
 
 type Libraries = (
   | 'drawing'
@@ -152,6 +153,10 @@ export default function NewEvent() {
     }
   }, [capacityInput, ticketTypeInput, priceInput]);
 
+  const extra: ExtraMetadata = {
+    verified: false,
+  };
+
   const event: Event = {
     organizer: user,
     name: name,
@@ -165,10 +170,10 @@ export default function NewEvent() {
     ticket_banners: ticketBanners,
     price: price,
     location: locationResponse,
-    token_metadata: {},
+    token_metadata: {
+      extra: JSON.stringify(extra),
+    },
   };
-
-  console.log(locationResponse);
 
   return (
     <div className="lg:flex lg:justify-center lg:items-center lg:align-middle lg:p-9 p-5 lg:min-h-screen">
