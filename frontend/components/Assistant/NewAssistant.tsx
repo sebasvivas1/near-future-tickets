@@ -1,6 +1,6 @@
 import React from 'react';
-import useUser from '../../hooks/useUser';
 import Event from '../../models/Event';
+import { initContract } from '../near/near';
 import QRScanner from '../QR/QRScanner';
 
 interface NewAssistantProps {
@@ -8,10 +8,19 @@ interface NewAssistantProps {
 }
 
 export default function NewAssistant({ event }: NewAssistantProps) {
-  const [user] = useUser();
+  const [user, setUser] = React.useState('');
 
+  const setUsername = async () => {
+    const { contracts } = await initContract();
+    setUser(contracts.nftContract.account.accountId);
+  };
+
+  React.useEffect(() => {
+    setUsername();
+  }, []);
+  console.log(user);
   return (
-    <div>
+    <div className="min-h-screen">
       {user ? (
         <div>
           {user === event?.organizer ? (
@@ -19,7 +28,9 @@ export default function NewAssistant({ event }: NewAssistantProps) {
               <QRScanner />
             </div>
           ) : (
-            <div>Only Organizer can do this action</div>
+            <div>
+              <p>You are not the organizer of this event.</p>
+            </div>
           )}
         </div>
       ) : (

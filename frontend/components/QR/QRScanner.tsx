@@ -1,25 +1,25 @@
 import React from 'react';
-import QrScan from 'react-qr-scanner';
+import { QrReader } from 'react-qr-reader';
 
 export default function QRScanner() {
-  const [qrScan, setQrScan] = React.useState('');
-  const handleScan = (data) => {
-    if (data) {
-      setQrScan(data);
-      console.log(data);
-    }
-  };
-
-  console.log(qrScan);
+  const [data, setData] = React.useState('No result');
+  const constraints = {};
 
   return (
-    <div>
-      <QrScan
-        delay={300}
-        onError={(err) => console.log(err)}
-        onScan={handleScan}
-        style={{ height: 240, width: 320 }}
+    <>
+      <QrReader
+        onResult={(result, error) => {
+          if (!!result) {
+            setData(result?.toString());
+          }
+
+          if (!!error) {
+            null;
+          }
+        }}
+        constraints={constraints}
       />
-    </div>
+      <p>{data}</p>
+    </>
   );
 }

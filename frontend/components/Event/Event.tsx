@@ -136,7 +136,7 @@ export default function EventData({ event }: EventProps) {
                   className="bg-figma-500 lg:px-4 lg:py-1.5 text-figma-400 lg:text-lg font-semibold rounded-lg align-top"
                   title="Verify assistant"
                   onClick={() =>
-                    router.push(`/app/event/assistant/${event?.index}`)
+                    router.push(`/app/event/${event?.index}/assistant`)
                   }
                 >
                   <QRIcon className="w-7" />
