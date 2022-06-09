@@ -49,7 +49,7 @@ export default function EventLayout({ children }: EventLayoutProps) {
       <div className="hidden lg:flex">
         <Navbar />
       </div>
-      <div className="lg:hidden">
+      <div className="lg:hidden md:h-12 sm:h-20 min-w-full">
         <MobileNav />
       </div>
       {children}

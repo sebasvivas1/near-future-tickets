@@ -29,10 +29,10 @@ export default function MobileNav() {
     <div className="w-full fixed z-50 bg-figma-200 py-2">
       <div className="flex w-full justify-between items-center px-2">
         <div
-          className={`menu-btn w-0 ${showMenu ? 'open' : ''}`}
+          className={`menu-btn w-12 h-12 justify-center ${showMenu ? 'open' : ''}`}
           onClick={onMenuClick}
         >
-          <div className="menu-btn__burger"></div>
+          <div className="menu-btn__burger h-1 w-6 mt-4 ml-3"></div>
         </div>
 
         <div className="lg:hidden" onClick={() => router.push('/app')}>

@@ -11,9 +11,9 @@ interface LogOutModalProps {
 export function LogOutModal({ setOpen, isOpen }: LogOutModalProps) {
   const [user, setUser] = useUser();
   const [nearContext] = useNear();
-  const logOut = async () => {
-    await setUser('');
-    await nearContext.walletConnection.signOut();
+  const logOut = () => {
+   setUser('');
+   nearContext.walletConnection.signOut();
     setOpen(false);
   };
   return (

@@ -39,6 +39,8 @@ pub type TokenSeriesId = String;
 
 pub const TREASURY_FEE: u128 = 300;
 
+pub const MAX_ACCOUNTS_ROYALTY: usize = 7;
+
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Event {
@@ -215,7 +217,7 @@ this
         // if perpetual royalties were passed into the function:
         if let Some(perpetual_royalties) = perpetual_royalties {
             //make sure that the length of the perpetual royalties is below 7 since we won't have enough GAS to pay out that many people
-            assert!(perpetual_royalties.len() < 7, "Cannot add more than 6 perpetual royalty amounts");
+            require!((perpetual_royalties.len() < MAX_ACCOUNTS_ROYALTY), format!("Cannot add more than {} perpetual royalty amounts", MAX_ACCOUNTS_ROYALTY));
 
             //iterate through the perpetual royalties and insert the account and amount in the royalty map
             for (account, amount) in perpetual_royalties {
@@ -234,9 +236,9 @@ this
             metadata.copies = Some(U64(capacity[i].into()).0);
             total_capacity += capacity[i];
             metadata.media = Some(ticket_banners[i].clone());
-            let ticket_title = format!("{:#?}{}{}", &title , TITLE_DELIMETER , ticket_type[i].clone());
-            metadata.title = Some(ticket_title.to_string());
-             
+            let ticket_title: String = format!("{:#?}{}{}", &title , TITLE_DELIMETER , ticket_type[i].clone());
+            //TODO: Revisar esto
+            metadata.title = Some(ticket_title.clone());
 
             self.token_series_by_id.insert(&token_series_id, &TokenSeries{
                 metadata: metadata.clone(),
@@ -296,7 +298,7 @@ this
         let attached_deposit = env::attached_deposit();
         let token_series = self.token_series_by_id.get(&token_series_id).expect("Token doesnt exist");
         let price: u128 = token_series.price.unwrap();
-        assert!(attached_deposit >= price, "attached deposit doesnt cover the price of the ticket: {}", price);
+        require!(attached_deposit >= price, format!("attached deposit doesnt cover the price of the ticket: {}", price));
         let token_id: TokenId = self._nft_mint_series(token_series_id, receiver_id);
         let treasury_fee = price as u128 * TREASURY_FEE / 10_000u128;
         let price_deducted = price - treasury_fee;
@@ -311,15 +313,15 @@ this
         token_series_id: TokenSeriesId,
         receiver_id: AccountId
     ) -> TokenId {
-        let mut token_series = self.token_series_by_id.get(&token_series_id).expect("Token series not exist");
-        assert!(
+        let mut token_series: TokenSeries = self.token_series_by_id.get(&token_series_id).expect("Token series not exist");
+        require!(
             token_series.is_mintable,
             "Token series is not mintable"
         );
 
         let num_tokens = token_series.tokens.len();
         let max_copies = token_series.metadata.copies.unwrap_or(u64::MAX);
-        assert!(num_tokens < max_copies, "Series supply maxed");
+        require!(num_tokens < max_copies, "Series supply maxed");
 
         if (num_tokens + 1) >= max_copies {
             token_series.is_mintable = false;
