@@ -10,7 +10,7 @@ interface SearchBarProps {
 export default function SearchBar({ events, className }: SearchBarProps) {
   const [searchTerm, setSearchTerm] = React.useState<Array<Event>>([]);
 
-  const handleFilter = (event) => {
+  const handleFilter = (event: React.ChangeEvent<HTMLInputElement>) => {
     const searchWord = event.target.value;
     // eslint-disable-next-line arrow-body-style
     const newFilter = events.filter((value) => {

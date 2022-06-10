@@ -22,9 +22,9 @@ export default function Navbar() {
     );
   };
 
-  const logOut = async () => {
-    await setUser('');
-    await nearContext.walletConnection.signOut();
+  const logOut = () => {
+   setUser('');
+   nearContext.walletConnection.signOut();
   };
 
   const getEvents = async () => {

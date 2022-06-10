@@ -102,16 +102,18 @@ export default function EventData({ event }: EventProps) {
 
   return (
     <div className="min-h-screen lg:flex lg:flex-col lg:mt-24">
-      <div className="mb-28">
-        <div className="lg:flex lg:justify-between lg:w-full lg:h-auto lg:p-8 bg-bg-event">
+      <div className="mb-28 bg-transparent rounded-tr-md rounded-tl-md px-3 mt-3 rounded-b-md">
+        <div className="lg:flex lg:justify-between lg:w-full lg:h-auto lg:p-8 bg-bg-event sm:flex sm:flex-row md:row-start-1 content-center">
           <div className="text-figma-300 lg:w-6/12">
-            <h2 className="lg:text-7xl font-semibold">{event?.name}</h2>
-            <h2 className="lg:text-2xl mt-4">{event?.description}</h2>
+            <h2 className="lg:text-8xl md:text-7xl sm:text-5xl font-semibold xl:w-3/6 lg:w-2/6 md-lg:w-2/6 md:w-1/4 sm:w-1/4 ml-5 mr-5">{event?.name}</h2>
+            <h2 className="lg:text-2xl mt-4 md:text-xs">{event?.description}</h2>
           </div>
-          <div className="lg:w-5/12">
-            <img src={event?.banner} alt={event?.name} className="rounded-xl" />
+          <div className=/*lg:w-1/3*/ "px-8  lg:w-3/6 md:w-3/4 sm:w-3/4 mt-8 ">
+            <img src={event?.banner} alt={event?.name} className="rounded-xl ml-2 mr-2" />
           </div>
         </div>
+
+        <div className="bg-transparent rounded-2xl lg:py-7 lg:px-11 lg:text-center">
         <div className="text-figma-300 lg:p-8 lg:flex lg:justify-between lg:align-middle">
           <div>
             <h2 className="lg:text-3xl">Event Information</h2>
@@ -178,6 +180,7 @@ export default function EventData({ event }: EventProps) {
             <h2>map loading...</h2>
           </div>
         )}
+      </div>
       </div>
       <div className="lg:fixed lg:bottom-0 w-full">
         <div className="bg-figma-400 rounded-t-2xl lg:py-7 lg:px-11 lg:text-center">
