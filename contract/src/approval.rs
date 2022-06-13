@@ -51,8 +51,8 @@ impl NonFungibleTokenCore for Contract {
         let mut token = self.tokens_by_id.get(&token_id).expect("No token");
 
         //make sure that the person calling the function is the owner of the token
-        assert_eq!(
-            &env::predecessor_account_id(),
+        require!(
+            &env::predecessor_account_id() ==
             &token.owner_id,
             "Predecessor must be the token owner."
         );
@@ -139,7 +139,7 @@ impl NonFungibleTokenCore for Contract {
 
         //get the caller of the function and assert that they are the owner of the token
         let predecessor_account_id = env::predecessor_account_id();
-        assert_eq!(&predecessor_account_id, &token.owner_id);
+        require!(&predecessor_account_id == &token.owner_id);
 
         //if the account ID was in the token's approval, we remove it and the if statement logic executes
         if token
@@ -165,7 +165,7 @@ impl NonFungibleTokenCore for Contract {
         let mut token = self.tokens_by_id.get(&token_id).expect("No token");
         //get the caller and make sure they are the owner of the tokens
         let predecessor_account_id = env::predecessor_account_id();
-        assert_eq!(&predecessor_account_id, &token.owner_id);
+        require!(&predecessor_account_id == &token.owner_id);
 
         //only revoke if the approved account IDs for the token is not empty
         if !token.approved_account_ids.is_empty() {

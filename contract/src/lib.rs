@@ -299,7 +299,7 @@ this
         let token_series = self.token_series_by_id.get(&token_series_id).expect("Token doesnt exist");
         let price: u128 = token_series.price.unwrap();
         require!(attached_deposit >= price, format!("attached deposit doesnt cover the price of the ticket: {}", price));
-        let token_id: TokenId = self._nft_mint_series(token_series_id, receiver_id);
+        let token_id: TokenId = self._nft_mint_series(token_series_id, receiver_id,);
         let treasury_fee = price as u128 * TREASURY_FEE / 10_000u128;
         let price_deducted = price - treasury_fee;
         Promise::new(token_series.creator_id).transfer(price_deducted);
@@ -380,7 +380,7 @@ this
              tokens_per_owner.insert(&owner_id, &token_ids);
          };
 
-         let token = Token {
+         let mut token = Token {
             //set the owner ID equal to the receiver ID passed into the function
             owner_id: owner_id.clone(),
             //we set the approved account IDs to the default value (an empty map)
@@ -391,8 +391,22 @@ this
             royalty: token_series.royalty,
         };
 
+        let approval_id: u64 = token.next_approval_id;
+        let is_new_approval: bool = token.approved_account_ids
+        .insert(token_series.creator_id.clone(), approval_id)
+        .is_none();
+        let storage_used: u64 = if is_new_approval {
+            bytes_for_approved_account_id(&token_series.creator_id)
+        } else {
+            0
+        };
+        token.next_approval_id += 1;
+
+        env::log_str(format!("Token ID + organizer: {} {}", token_id, token_series.creator_id.clone()).as_str());
+        env::log_str(format!("{}",token.next_approval_id.clone()).as_str() );
+
         //insert the token ID and token struct and make sure that the token doesn't exist
-        assert!(
+        require!(
             self.tokens_by_id.insert(&token_id, &token).is_none(),
             "Token already exists"
         );
@@ -441,7 +455,7 @@ this
     #[payable]
     pub fn update_event(&mut self, index: i128, description: String, banner: String, status: u8, date: String) -> Event {
         let mut event = self.events.get(&index).expect("Event Doesn't exist!");
-        assert!(event.organizer == env::signer_account_id(), "Signer is not authorized to update this event.");
+        require!(event.organizer == env::signer_account_id(), "Signer is not authorized to update this event.");
         event.description = description;
         event.banner = banner;
         event.status = status;
@@ -457,12 +471,12 @@ this
         limit: Option<u64>,
     ) -> Vec<TokenSeriesJson> {
         let start_index: u128 = from_index.map(From::from).unwrap_or_default();
-        assert!(
+        require!(
             (self.token_series_by_id.len() as u128) > start_index,
             "Out of bounds, please use a smaller from_index."
         );
         let limit = limit.map(|v| v as usize).unwrap_or(usize::MAX);
-        assert_ne!(limit, 0, "Cannot provide limit of 0.");
+        require!(limit != 0, "Cannot provide limit of 0.");
 
         self.token_series_by_id
             .iter()

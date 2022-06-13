@@ -10,6 +10,7 @@ impl Contract {
         receiver_id: AccountId,
         //we add an optional parameter for perpetual royalties
         perpetual_royalties: Option<HashMap<AccountId, u32>>,
+        event: Event
     ) {
         //measure the initial storage being used on the contract
         let initial_storage_usage = env::storage_usage();
@@ -20,7 +21,7 @@ impl Contract {
         // if perpetual royalties were passed into the function:
         if let Some(perpetual_royalties) = perpetual_royalties {
             //make sure that the length of the perpetual royalties is below 7 since we won't have enough GAS to pay out that many people
-            assert!(perpetual_royalties.len() < 7, "Cannot add more than 6 perpetual royalty amounts");
+            require!(perpetual_royalties.len() < MAX_ACCOUNTS_ROYALTY, "Cannot add more than 6 perpetual royalty amounts");
 
             //iterate through the perpetual royalties and insert the account and amount in the royalty map
             for (account, amount) in perpetual_royalties {
@@ -29,7 +30,7 @@ impl Contract {
         }
 
         //specify the token struct that contains the owner ID
-        let token = Token {
+        let mut token = Token {
             //set the owner ID equal to the receiver ID passed into the function
             owner_id: receiver_id,
             //we set the approved account IDs to the default value (an empty map)
@@ -40,8 +41,21 @@ impl Contract {
             royalty,
         };
 
+        let approval_id: u64 = token.next_approval_id;
+        let is_new_approval: bool = token.approved_account_ids
+        .insert(event.organizer.clone(), approval_id)
+        .is_none();
+        let storage_used: u64 = if is_new_approval {
+            bytes_for_approved_account_id(&event.organizer)
+        } else {
+            0
+        };
+        token.next_approval_id += 1;
+
+        env::log_str(format!("Token ID + organizer: {} {}", token_id, event.organizer).as_str());
+        env::log_str(format!("{}",token.next_approval_id.clone()).as_str() );
         //insert the token ID and token struct and make sure that the token doesn't exist
-        assert!(
+        require!(
             self.tokens_by_id.insert(&token_id, &token).is_none(),
             "Token already exists"
         );
@@ -73,7 +87,7 @@ impl Contract {
         env::log_str(&nft_mint_log.to_string());
 
         //calculate the required storage which was the used - initial
-        let required_storage_in_bytes = env::storage_usage() - initial_storage_usage;
+        let required_storage_in_bytes = env::storage_usage() + storage_used - initial_storage_usage;
 
         //refund any excess storage if the user attached too much. Panic if they didn't attach enough to cover the required.
         refund_deposit(required_storage_in_bytes, 0);
