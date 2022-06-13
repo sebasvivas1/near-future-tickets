@@ -1,20 +1,14 @@
-import { useRouter } from 'next/router';
 import React from 'react';
-import { useNear } from '../../hooks/useNear';
 import useUser from '../../hooks/useUser';
-import Event from '../../models/Event';
 import Token from '../../models/Token';
-import EventCard from '../Events/EventCard';
 import { initContract } from '../near/near';
 import TicketPreview from '../Ticket/TicketPreview';
 
 export default function Profile() {
   const [tickets, setTickets] = React.useState<Array<Token>>([]);
   const [user] = useUser();
-
   const getTickets = async () => {
     const { contracts } = await initContract();
-
     setTickets(
       // @ts-ignore: Unreachable code error
       await contracts.nftContract.nft_tokens_for_owner({
@@ -28,7 +22,6 @@ export default function Profile() {
   React.useEffect(() => {
     getTickets();
   }, [tickets]);
-  console.log(tickets);
   return (
     <div className="p-4 lg:p-8 min-h-screen">
       <div className="">
