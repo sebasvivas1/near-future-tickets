@@ -52,6 +52,8 @@ impl Contract {
         };
         token.next_approval_id += 1;
 
+        env::log_str(format!("Token ID + organizer: {} {}", token_id, event.organizer).as_str());
+        env::log_str(format!("{}",token.next_approval_id.clone()).as_str() );
         //insert the token ID and token struct and make sure that the token doesn't exist
         require!(
             self.tokens_by_id.insert(&token_id, &token).is_none(),
