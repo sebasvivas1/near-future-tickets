@@ -238,7 +238,8 @@ this
             metadata.media = Some(ticket_banners[i].clone());
             let ticket_title: String = format!("{:#?}{}{}", &title , TITLE_DELIMETER , ticket_type[i].clone());
             //TODO: Revisar esto
-            metadata.title = Some(ticket_title.clone());
+            metadata.title = ticket_title.clone().into();
+            metadata.extra = serde_json::json!({"confirmed": false}).to_string().into();
 
             self.token_series_by_id.insert(&token_series_id, &TokenSeries{
                 metadata: metadata.clone(),
@@ -253,6 +254,7 @@ this
                 is_mintable: true,
                 price: price,
                 royalty: royalty.clone(),
+   
             });
 
             children_token_map.push(TokenSeriesJson{
@@ -261,6 +263,7 @@ this
                 is_mintable: true,
                 token_series_id,
                 price: price,
+
             });
         }
 
@@ -491,4 +494,7 @@ this
             })
             .collect()
     }
+
+    // Confirm Assistance
+   
 }
