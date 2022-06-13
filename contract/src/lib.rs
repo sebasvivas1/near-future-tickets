@@ -392,7 +392,7 @@ this
         };
 
         //insert the token ID and token struct and make sure that the token doesn't exist
-        assert!(
+        require!(
             self.tokens_by_id.insert(&token_id, &token).is_none(),
             "Token already exists"
         );
@@ -441,7 +441,7 @@ this
     #[payable]
     pub fn update_event(&mut self, index: i128, description: String, banner: String, status: u8, date: String) -> Event {
         let mut event = self.events.get(&index).expect("Event Doesn't exist!");
-        assert!(event.organizer == env::signer_account_id(), "Signer is not authorized to update this event.");
+        require!(event.organizer == env::signer_account_id(), "Signer is not authorized to update this event.");
         event.description = description;
         event.banner = banner;
         event.status = status;
@@ -457,12 +457,12 @@ this
         limit: Option<u64>,
     ) -> Vec<TokenSeriesJson> {
         let start_index: u128 = from_index.map(From::from).unwrap_or_default();
-        assert!(
+        require!(
             (self.token_series_by_id.len() as u128) > start_index,
             "Out of bounds, please use a smaller from_index."
         );
         let limit = limit.map(|v| v as usize).unwrap_or(usize::MAX);
-        assert_ne!(limit, 0, "Cannot provide limit of 0.");
+        require!(limit != 0, "Cannot provide limit of 0.");
 
         self.token_series_by_id
             .iter()

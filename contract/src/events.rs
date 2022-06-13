@@ -80,6 +80,8 @@ pub struct NftTransferLog {
 
 #[cfg(test)]
 mod tests {
+    use near_sdk::require;
+
     use super::*;
 
     #[test]
@@ -101,7 +103,7 @@ mod tests {
                 },
             ]),
         };
-        assert_eq!(expected, log.to_string());
+        require!(expected == log.to_string());
     }
 
     #[test]
@@ -133,6 +135,6 @@ mod tests {
                 memo: Some("Go Team!".to_owned()),
             }]),
         };
-        assert_eq!(expected, log.to_string());
+        require!(expected == log.to_string());
     }
 } 
