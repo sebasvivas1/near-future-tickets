@@ -55,6 +55,8 @@ export default function EventData({ event }: EventProps) {
     formatDate();
   }, []);
 
+  console.log(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
+
   const buyTicket = async (
     ticket: TokenSeriesJson,
     forMe: boolean,
