@@ -27,6 +27,14 @@ mod nft_core;
 mod royalty;
 mod events;
 
+
+pub (crate) fn might_string(option: Option<String>) -> String {
+    match option {
+        Some(text) => text,
+        None => "".to_string(),
+    }
+}
+
 // Used to delimit Event Title + Ticket Category (eg: Concert - VIP)
 pub const TITLE_DELIMETER: &str = " - ";
 
@@ -231,12 +239,15 @@ this
 
             let token_series_id = format!("{}", (self.token_series_by_id.len() + 1));
 
-            let title = name.clone();
+            let title: String = name.clone();
             let price = Some(price[i].clone().0);
             metadata.copies = Some(U64(capacity[i].into()).0);
             total_capacity += capacity[i];
             metadata.media = Some(ticket_banners[i].clone());
-            let ticket_title: String = format!("{:#?}{}{}", &title , TITLE_DELIMETER , ticket_type[i].clone());
+            let mut ticket_title: String = title;
+            ticket_title.push_str(&TITLE_DELIMETER);
+            ticket_title.push_str(&ticket_type[i]);
+            //let ticket_title: String = format!("{:#?}{}{}", &title , TITLE_DELIMETER , ticket_type[i].clone());
             //TODO: Revisar esto
             metadata.title = Some(ticket_title.clone());
 
@@ -299,14 +310,15 @@ this
         let token_series = self.token_series_by_id.get(&token_series_id).expect("Token doesnt exist");
         let price: u128 = token_series.price.unwrap();
         require!(attached_deposit >= price, format!("attached deposit doesnt cover the price of the ticket: {}", price));
-        let token_id: TokenId = self._nft_mint_series(token_series_id, receiver_id,);
-        let treasury_fee = price as u128 * TREASURY_FEE / 10_000u128;
-        let price_deducted = price - treasury_fee;
+        let token_id: TokenId = self._nft_mint_series(token_series_id, receiver_id);
+        let treasury_fee: u128 = price as u128 * TREASURY_FEE / 10_000u128;
+        let price_deducted: u128 = price - treasury_fee;
         Promise::new(token_series.creator_id).transfer(price_deducted);
         Promise::new(self.treasury.clone()).transfer(treasury_fee);
         refund_deposit(env::storage_usage()-initial_storage_usage, price);
         token_id
     }
+
 
     fn _nft_mint_series(
         &mut self,
@@ -330,7 +342,12 @@ this
         let token_id = format!("{}{}{}", &token_series_id, TITLE_DELIMETER, num_tokens + 1);
         token_series.tokens.insert(&token_id);
         self.token_series_by_id.insert(&token_series_id, &token_series);
-        let title: String = format!("{:#?} - {}{}{}{}", &token_series.metadata.title, TITLE_DELIMETER, &token_series_id, TITLE_DELIMETER, (num_tokens + 1).to_string());
+        let mut title: String = might_string(token_series.metadata.title.clone()); //token_series.metadata.title.unwrap_or_else("No title");
+        title.push_str(&TITLE_DELIMETER);
+        title.push_str(&token_series_id);
+        title.push_str(&TITLE_DELIMETER);
+        title.push_str(&(num_tokens + 1).to_string());
+        //let title: String = format!("{:#?} - {}{}{}{}", &token_series.metadata.title, TITLE_DELIMETER, &token_series_id, TITLE_DELIMETER, (num_tokens + 1).to_string());
 
 
         let metadata = tokenmeta {
