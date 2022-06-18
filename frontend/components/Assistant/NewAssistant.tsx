@@ -15,6 +15,7 @@ export default function NewAssistant({ event }: NewAssistantProps) {
   const [user, setUser] = React.useState('');
   const [id, setId] = React.useState('');
   const [ticket, setTicket] = React.useState<Token>(null);
+  const [confirmed, setConfirmed] = React.useState(false);
 
   const setUsername = async () => {
     const { contracts } = await initContract();
@@ -30,10 +31,22 @@ export default function NewAssistant({ event }: NewAssistantProps) {
     // @ts-ignore: Unreachable code error
     const ticket = await contracts.nftContract.nft_token({ token_id: id });
     setTicket(ticket);
+    // @ts-ignore: Unreachable code error
+    const confirmed = await contracts.nftContract.check_assistance({
+      token_id: id,
+    });
+    if (confirmed === '{"confirmed":false}') {
+      console.log(confirmed);
+      setConfirmed(false);
+    } else {
+      setConfirmed(true);
+    }
   };
 
-  const confirmAssistant = async () => {
+  const confirmAssistance = async () => {
     const { contracts } = await initContract();
+    // @ts-ignore: Unreachable code error
+    await contracts.nftContract.confirm_assistance({ token_id: id });
   };
 
   return (
@@ -69,12 +82,26 @@ export default function NewAssistant({ event }: NewAssistantProps) {
                     <div className="p-3 w-full min-h-full">
                       <h2>Owner: {ticket?.owner_id}</h2>
                       <h2>Ticket ID: {ticket?.token_id}</h2>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        className="w-full px-2 py-1.5 rounded-md bg-figma-500 text-figma-400 text-center mt-4"
-                      >
-                        Confirm Assistance
-                      </motion.button>
+                      {confirmed ? (
+                        <div>
+                          <motion.button
+                            disabled={true}
+                            className="w-full px-2 py-1.5 rounded-md bg-figma-500 text-figma-400 text-center mt-4"
+                          >
+                            Ticket Was already Confirmed
+                          </motion.button>
+                        </div>
+                      ) : (
+                        <div>
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            className="w-full px-2 py-1.5 rounded-md bg-figma-500 text-figma-400 text-center mt-4"
+                            onClick={() => confirmAssistance()}
+                          >
+                            Confirm Assistance
+                          </motion.button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : null}

@@ -261,19 +261,9 @@ this
             metadata.copies = Some(U64(capacity[i].into()).0);
             total_capacity += capacity[i];
             metadata.media = Some(ticket_banners[i].clone());
-<<<<<<< HEAD
-            let mut ticket_title: String = title;
-            ticket_title.push_str(&TITLE_DELIMETER);
-            ticket_title.push_str(&ticket_type[i]);
-            //let ticket_title: String = format!("{:#?}{}{}", &title , TITLE_DELIMETER , ticket_type[i].clone());
-            //TODO: Revisar esto
-            metadata.title = ticket_title.clone().into();
-            metadata.extra = Some(extra.to_string());
-=======
             let ticket_title: String = push_str_cleaner(title, vec![&TITLE_DELIMETER.to_string(), &ticket_type[i].as_str()]);
             metadata.title = Some(ticket_title.clone());
             metadata.extra = serde_json::json!({"confirmed": false}).to_string().into();
->>>>>>> 2ab064a6c92d7bbc21adfe30ab7ed33883516dc8
 
             self.token_series_by_id.insert(&token_series_id, &TokenSeries{
                 metadata: metadata.clone(),
@@ -368,19 +358,9 @@ this
         let token_id: String = format!("{}{}{}", &token_series_id, TITLE_DELIMETER, num_tokens + 1);
         token_series.tokens.insert(&token_id);
         self.token_series_by_id.insert(&token_series_id, &token_series);
-<<<<<<< HEAD
-        let mut title: String = might_string(token_series.metadata.title.clone());
-        title.push_str(&TITLE_DELIMETER);
-        title.push_str(&token_series_id);
-        title.push_str(&TITLE_DELIMETER);
-        title.push_str(&(num_tokens + 1).to_string());
-
-        let metadata = tokenmeta {
-=======
-        let title: String = push_str_cleaner(might_string(token_series.metadata.title.clone()), vec![&TITLE_DELIMETER, &token_series_id, &TITLE_DELIMETER, &(num_tokens + 1).to_string()]); //token_series.metadata.title.unwrap_or_else("No title");
+        let title: String = push_str_cleaner(might_string(token_series.metadata.title.clone()), vec![&TITLE_DELIMETER, &token_series_id, &TITLE_DELIMETER, &(num_tokens + 1).to_string()]); 
 
         let metadata: near_contract_standards::non_fungible_token::metadata::TokenMetadata = tokenmeta {
->>>>>>> 2ab064a6c92d7bbc21adfe30ab7ed33883516dc8
             title: Some(title.clone()),
             description: token_series.metadata.description.clone(),
             media: token_series.metadata.media.clone(),

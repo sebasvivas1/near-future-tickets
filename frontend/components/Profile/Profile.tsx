@@ -27,12 +27,13 @@ export default function Profile() {
     const conf = [];
     tickets.forEach((ticket) => {
       const extra = ticket?.metadata?.extra;
+      console.log(ticket?.token_id, ' - ', extra);
       if (extra === '{"confirmed":false}') {
         notConf.push(ticket);
-        console.table(ticket);
+        // console.table(ticket);
       } else {
         conf.push(ticket);
-        console.table(ticket);
+        // console.table(ticket);
       }
       setConfirmed(conf);
       setNotConfirmed(notConf);

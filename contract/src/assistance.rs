@@ -25,7 +25,6 @@ impl Confirm for Contract {
         let event_id = &token_id.split_ascii_whitespace().collect::<Vec<&str>>()[0].parse::<i128>().unwrap();
         let event: Event = self.events.get(event_id).expect("Event not found");
         require!(env::signer_account_id() == event.organizer, "You are not the organizer");
-
         let token: TokenMetadata = self.token_metadata_by_id.get(&token_id).expect("Token should exist");
         let mut e: Extra = near_sdk::serde_json::from_str(&token.extra.clone().unwrap()).unwrap();
         require!(e.confirmed == false, "Event already confirmed");
@@ -39,11 +38,6 @@ impl Confirm for Contract {
     }
 
     fn check_assistance(&self, token_id: String) -> Option<String> {
-        // let event_id = &token_id.split_ascii_whitespace().collect::<Vec<&str>>()[0].parse::<i128>().unwrap();
-        // env::log_str(&format!("{}", event_id));
-        //let event_id: i128 = event_id.parse::<i128>().unwrap();
-        //env::log_str(&format!("{}", event_id));
-
         let token = self.token_metadata_by_id.get(&token_id).expect("Token should exist");
         env::log_str("Token found");
         // env::log_str(&token.unwrap().extra);
