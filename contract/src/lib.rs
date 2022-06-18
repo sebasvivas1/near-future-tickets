@@ -2,7 +2,7 @@ use near_contract_standards::non_fungible_token::{ NonFungibleToken };
 use near_contract_standards::non_fungible_token::metadata::TokenMetadata as tokenmeta;
 use std::collections::HashMap;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{LazyOption, LookupMap, UnorderedMap, UnorderedSet};
+use near_sdk::collections::{LazyOption, LookupMap, UnorderedMap, UnorderedSet, Vector};
 use near_sdk::json_types::{Base64VecU8, U128, U64};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{
@@ -26,6 +26,7 @@ mod mint;
 mod nft_core;
 mod royalty;
 mod events;
+mod assistance;
 
 
 pub (crate) fn might_string(option: Option<String>) -> String {
@@ -33,6 +34,14 @@ pub (crate) fn might_string(option: Option<String>) -> String {
         Some(text) => text,
         None => "".to_string(),
     }
+}
+
+pub (crate) fn push_str_cleaner(main_string: String, to_push: Vec<&str>) -> String {
+    let mut new_string = main_string;
+    for item in to_push {
+        new_string.push_str(&item);
+    }
+    new_string.to_string()
 }
 
 // Used to delimit Event Title + Ticket Category (eg: Concert - VIP)
@@ -48,6 +57,12 @@ pub type TokenSeriesId = String;
 pub const TREASURY_FEE: u128 = 300;
 
 pub const MAX_ACCOUNTS_ROYALTY: usize = 7;
+
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Clone, Debug)]
+#[serde(crate = "near_sdk::serde")]
+struct Extra {
+    confirmed: bool,
+}
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -246,6 +261,7 @@ this
             metadata.copies = Some(U64(capacity[i].into()).0);
             total_capacity += capacity[i];
             metadata.media = Some(ticket_banners[i].clone());
+<<<<<<< HEAD
             let mut ticket_title: String = title;
             ticket_title.push_str(&TITLE_DELIMETER);
             ticket_title.push_str(&ticket_type[i]);
@@ -253,6 +269,11 @@ this
             //TODO: Revisar esto
             metadata.title = ticket_title.clone().into();
             metadata.extra = Some(extra.to_string());
+=======
+            let ticket_title: String = push_str_cleaner(title, vec![&TITLE_DELIMETER.to_string(), &ticket_type[i].as_str()]);
+            metadata.title = Some(ticket_title.clone());
+            metadata.extra = serde_json::json!({"confirmed": false}).to_string().into();
+>>>>>>> 2ab064a6c92d7bbc21adfe30ab7ed33883516dc8
 
             self.token_series_by_id.insert(&token_series_id, &TokenSeries{
                 metadata: metadata.clone(),
@@ -318,12 +339,12 @@ this
         let token_id: TokenId = self._nft_mint_series(token_series_id, receiver_id);
         let treasury_fee: u128 = price as u128 * TREASURY_FEE / 10_000u128;
         let price_deducted: u128 = price - treasury_fee;
-        Promise::new(token_series.creator_id).transfer(price_deducted);
-        Promise::new(self.treasury.clone()).transfer(treasury_fee);
+        Promise::new(token_series.creator_id).transfer(price_deducted).and(
+            Promise::new(self.treasury.clone()).transfer(treasury_fee)
+        );
         refund_deposit(env::storage_usage()-initial_storage_usage, price);
         token_id
     }
-
 
     fn _nft_mint_series(
         &mut self,
@@ -336,17 +357,18 @@ this
             "Token series is not mintable"
         );
 
-        let num_tokens = token_series.tokens.len();
-        let max_copies = token_series.metadata.copies.unwrap_or(u64::MAX);
+        let num_tokens: u64 = token_series.tokens.len();
+        let max_copies: u64 = token_series.metadata.copies.unwrap_or(u64::MAX);
         require!(num_tokens < max_copies, "Series supply maxed");
 
         if (num_tokens + 1) >= max_copies {
             token_series.is_mintable = false;
         }
 
-        let token_id = format!("{}{}{}", &token_series_id, TITLE_DELIMETER, num_tokens + 1);
+        let token_id: String = format!("{}{}{}", &token_series_id, TITLE_DELIMETER, num_tokens + 1);
         token_series.tokens.insert(&token_id);
         self.token_series_by_id.insert(&token_series_id, &token_series);
+<<<<<<< HEAD
         let mut title: String = might_string(token_series.metadata.title.clone());
         title.push_str(&TITLE_DELIMETER);
         title.push_str(&token_series_id);
@@ -354,6 +376,11 @@ this
         title.push_str(&(num_tokens + 1).to_string());
 
         let metadata = tokenmeta {
+=======
+        let title: String = push_str_cleaner(might_string(token_series.metadata.title.clone()), vec![&TITLE_DELIMETER, &token_series_id, &TITLE_DELIMETER, &(num_tokens + 1).to_string()]); //token_series.metadata.title.unwrap_or_else("No title");
+
+        let metadata: near_contract_standards::non_fungible_token::metadata::TokenMetadata = tokenmeta {
+>>>>>>> 2ab064a6c92d7bbc21adfe30ab7ed33883516dc8
             title: Some(title.clone()),
             description: token_series.metadata.description.clone(),
             media: token_series.metadata.media.clone(),
@@ -495,7 +522,7 @@ this
             (self.token_series_by_id.len() as u128) > start_index,
             "Out of bounds, please use a smaller from_index."
         );
-        let limit = limit.map(|v| v as usize).unwrap_or(usize::MAX);
+        let limit: usize = limit.map(|v| v as usize).unwrap_or(usize::MAX);
         require!(limit != 0, "Cannot provide limit of 0.");
 
         self.token_series_by_id
@@ -511,7 +538,6 @@ this
             })
             .collect()
     }
-
     // Confirm Assistance
    
 }
