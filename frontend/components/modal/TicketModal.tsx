@@ -16,7 +16,6 @@ export function TicketModal({ ticket, setOpen, isOpen }: TicketModalProps) {
       setSrc(data);
     });
   }, []);
-  console.log(ticket);
   return (
     <Modal
       setOpen={setOpen}
@@ -30,7 +29,6 @@ export function TicketModal({ ticket, setOpen, isOpen }: TicketModalProps) {
         <div>
           <h2>Owner: {ticket?.owner_id}</h2>
           <h2>Ticket ID: {ticket?.token_id}</h2>
-          <h2>Confirmed: {JSON.parse(ticket?.metadata?.extra)?.confirmed}</h2>
         </div>
       </div>
     </Modal>

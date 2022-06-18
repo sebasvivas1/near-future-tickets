@@ -62,8 +62,6 @@ export default function NewEvent() {
       setUploaded(true);
       const url = `https://ipfs.infura.io/ipfs/${created.path}`;
       setUrlArr(url);
-      console.log('File uploaded ', url);
-      console.log(file);
     } catch (error) {
       console.log(error.message);
     }
@@ -80,8 +78,6 @@ export default function NewEvent() {
         const created = await client.add(ticket_banner);
         const url = `https://ipfs.infura.io/ipfs/${created.path}`;
         urlList.push(url);
-        console.log('File uploaded ', url);
-        console.log(urlList);
       }
       setTicketBanners(urlList);
     } catch (error) {
@@ -120,7 +116,6 @@ export default function NewEvent() {
       arr.push(Number(item));
     });
     setCapacity(arr);
-    console.log(capacity);
   };
 
   const refactorTicketType = () => {
@@ -129,7 +124,6 @@ export default function NewEvent() {
       arr.push(item);
     });
     setTicketType(arr);
-    console.log(ticketType);
   };
 
   const refactorPrice = () => {
@@ -138,7 +132,6 @@ export default function NewEvent() {
       arr.push(toFixed(Number(item) * ONE_NEAR_IN_YOCTO));
     });
     setPrice(arr);
-    console.log(price);
   };
 
   React.useEffect(() => {

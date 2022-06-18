@@ -239,6 +239,8 @@ this
 
             let token_series_id = format!("{}", (self.token_series_by_id.len() + 1));
 
+            let extra = r#"{"confirmed": false}"#;
+
             let title: String = name.clone();
             let price = Some(price[i].clone().0);
             metadata.copies = Some(U64(capacity[i].into()).0);
@@ -250,7 +252,7 @@ this
             //let ticket_title: String = format!("{:#?}{}{}", &title , TITLE_DELIMETER , ticket_type[i].clone());
             //TODO: Revisar esto
             metadata.title = ticket_title.clone().into();
-            metadata.extra = serde_json::json!({"confirmed": false}).to_string().into();
+            metadata.extra = Some(extra.to_string());
 
             self.token_series_by_id.insert(&token_series_id, &TokenSeries{
                 metadata: metadata.clone(),
@@ -345,13 +347,11 @@ this
         let token_id = format!("{}{}{}", &token_series_id, TITLE_DELIMETER, num_tokens + 1);
         token_series.tokens.insert(&token_id);
         self.token_series_by_id.insert(&token_series_id, &token_series);
-        let mut title: String = might_string(token_series.metadata.title.clone()); //token_series.metadata.title.unwrap_or_else("No title");
+        let mut title: String = might_string(token_series.metadata.title.clone());
         title.push_str(&TITLE_DELIMETER);
         title.push_str(&token_series_id);
         title.push_str(&TITLE_DELIMETER);
         title.push_str(&(num_tokens + 1).to_string());
-        //let title: String = format!("{:#?} - {}{}{}{}", &token_series.metadata.title, TITLE_DELIMETER, &token_series_id, TITLE_DELIMETER, (num_tokens + 1).to_string());
-
 
         let metadata = tokenmeta {
             title: Some(title.clone()),

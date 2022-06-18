@@ -36,10 +36,6 @@ export default function NewAssistant({ event }: NewAssistantProps) {
     const { contracts } = await initContract();
   };
 
-  React.useEffect(() => {
-    console.log(ticket?.approved_accounts_id);
-  }, [ticket]);
-
   return (
     <div className="min-h-screen w-full flex justify-center align-middle items-center">
       {user ? (

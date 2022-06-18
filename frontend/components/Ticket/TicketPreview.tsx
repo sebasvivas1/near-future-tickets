@@ -11,6 +11,7 @@ export default function TicketPreview({ ticket }: TicketPreviewProps) {
   const truncate = (str: string = null) => {
     return str?.length > 31 ? str.substring(0, 30) + '...' : str;
   };
+
   return (
     <div className="flex justify-center align-middle">
       {ticket !== undefined ? (

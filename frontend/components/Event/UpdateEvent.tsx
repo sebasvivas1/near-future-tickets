@@ -74,8 +74,6 @@ export default function UpdateEvent() {
       setUploaded(true);
       const url = `https://ipfs.infura.io/ipfs/${created.path}`;
       setNewUrlArr(url);
-      console.log('File uploaded ', url);
-      console.log(file);
     } catch (error) {
       console.log(error.message);
     }
