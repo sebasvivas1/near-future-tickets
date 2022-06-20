@@ -4,7 +4,6 @@ import Event from '../../models/Event';
 import Token from '../../models/Token';
 import { Input } from '../inputs/Input';
 import { initContract } from '../near/near';
-import QRScanner from '../QR/QRScanner';
 import TicketPreview from '../Ticket/TicketPreview';
 
 interface NewAssistantProps {
