@@ -467,9 +467,21 @@ this
     }
 
     // Get All events
-    pub fn get_events(self) -> Vec<Event> {
+    pub fn get_events(self, 
+        from_index: Option<U128>,
+        limit: Option<u64>,) -> Vec<Event> {
         let event_list = self.events.values_as_vector().to_vec();
-        event_list
+
+        let start = u128::from(from_index.unwrap_or(U128(0)));
+
+        return event_list.iter()
+            //skip to the index we specified in the start variable
+            .skip(start as usize) 
+            //take the first "limit" elements in the vector. If we didn't specify a limit, use 50
+            .take(limit.unwrap_or(50) as usize) 
+            //we'll map the token IDs which are strings into Json Tokens
+            .map(|event| self.events.get(&event.index).unwrap())
+            .collect();
     }
 
     // Get one event given its id
