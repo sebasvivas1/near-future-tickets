@@ -23,7 +23,7 @@ export default function Loader() {
   return (
     <div className="h-screen flex items-center">
       <motion.div variants={loaderVariants} animate="animationOne">
-        <img src="/logo_vertical.png.png" alt="ASDFASDF" className="w-44" />
+        <img src="/logo_vertical.png" alt="ASDFASDF" className="w-44" />
       </motion.div>
     </div>
   );
