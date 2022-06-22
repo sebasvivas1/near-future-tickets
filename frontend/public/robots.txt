@@ -1,0 +1,6 @@
+# Allow all user agents.
+User-agent: *
+Allow: /
+
+# TODO: Change the fake sitemap hostname "near-future-tickets.vercel.app" for the official hostname
+Sitemap: https://near-future-tickets.vercel.app/api/sitemap
