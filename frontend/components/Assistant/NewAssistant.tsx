@@ -35,7 +35,6 @@ export default function NewAssistant({ event }: NewAssistantProps) {
       token_id: id,
     });
     if (confirmed === '{"confirmed":false}') {
-      console.log(confirmed);
       setConfirmed(false);
     } else {
       setConfirmed(true);

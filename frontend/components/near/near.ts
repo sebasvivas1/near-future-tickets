@@ -48,6 +48,7 @@ export const initContract = async () => {
         'get_events',
         'get_event',
         'check_assistance',
+        'get_events_supply',
       ],
       // Change methods can modify the state, but you don't receive the returned value when called
       changeMethods: [

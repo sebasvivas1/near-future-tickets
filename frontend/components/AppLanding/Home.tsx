@@ -4,14 +4,15 @@ import Event from '../../models/Event';
 import Carousel from '../Carousel/Carousel';
 import EventCard from '../Events/EventCard';
 import { initContract } from '../near/near';
-import { motion } from 'framer-motion';
 export default function Home() {
   const [events, setEvents] = React.useState<Array<Event>>([]);
 
   const getEvents = async () => {
     const { contracts } = await initContract();
-    // @ts-ignore: Unreachable code error
-    setEvents(await contracts?.nftContract?.get_events());
+    setEvents(
+      // @ts-ignore: Unreachable code error
+      await contracts?.nftContract?.get_events({ from_index: '0', limit: 8 })
+    );
   };
 
   React.useEffect(() => {
