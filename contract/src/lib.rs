@@ -530,6 +530,10 @@ this
             })
             .collect()
     }
-    // Confirm Assistance
+    
+    // Events Supply
+    pub fn get_events_supply(&self) -> u128 {
+        self.events.len() as u128
+    }
    
 }
