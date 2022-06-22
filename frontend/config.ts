@@ -1,5 +1,4 @@
-export const nftContractName =
-  process.env.NEXT_PUBLIC_NFT_CONTRACT || 'dev-1655573745238-61499781905594';
+export const nftContractName = process.env.NEXT_PUBLIC_NFT_CONTRACT;
 
 export function getConfig(env: string) {
   switch (env) {

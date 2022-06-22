@@ -10,6 +10,7 @@ import useNotify from '../../hooks/useNotify';
 import { ONE_NEAR_IN_YOCTO, toFixed } from '../utils';
 import { useJsApiLoader, Autocomplete } from '@react-google-maps/api';
 import ExtraMetadata from '../../models/ExtraMetadata';
+import Connect from '../common/Connect';
 
 type Libraries = (
   | 'drawing'
