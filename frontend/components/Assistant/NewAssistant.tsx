@@ -55,7 +55,6 @@ export default function NewAssistant({ event }: NewAssistantProps) {
           {user === event?.organizer ? (
             <div className="flex justify-center items-center align-middle space-x-14">
               <div className="w-1/4">
-                {/* <QRScanner /> */}
                 <Input
                   required
                   className="text-figma-400 mt-8 rounded-md"
