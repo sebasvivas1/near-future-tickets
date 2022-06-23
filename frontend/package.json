@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "export": "next build && next export",
+    "prod": "next build && next start"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.11.8",

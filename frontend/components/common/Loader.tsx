@@ -21,7 +21,7 @@ const loaderVariants = {
 
 export default function Loader() {
   return (
-    <div className="h-screen flex items-center">
+    <div className="min-h-screen w-full flex items-center">
       <motion.div variants={loaderVariants} animate="animationOne">
         <img src="/logo_vertical.png" alt="ASDFASDF" className="w-44" />
       </motion.div>
