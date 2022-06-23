@@ -253,9 +253,6 @@ this
         for (i, _x) in ticket_type.iter().enumerate() {
 
             let token_series_id = format!("{}", (self.token_series_by_id.len() + 1));
-
-            let extra = r#"{"confirmed": false}"#;
-
             let title: String = name.clone();
             let price = Some(price[i].clone().0);
             metadata.copies = Some(U64(capacity[i].into()).0);
