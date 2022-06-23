@@ -20,7 +20,9 @@ export default function EventDetails() {
   };
 
   React.useEffect(() => {
-    get_event();
+    if (index !== undefined) {
+      get_event();
+    }
   }, [index]);
 
   return (
