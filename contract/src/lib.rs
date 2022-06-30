@@ -516,6 +516,5 @@ this
             })
             .collect()
     }
-    // Confirm Assistance
    
 }

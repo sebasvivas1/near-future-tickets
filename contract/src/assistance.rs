@@ -5,8 +5,6 @@ pub trait Confirm {
     fn check_assistance(&self, token_id: String) -> Option<String>;
 }
 
-
-
 pub (crate) fn might_extra(token: &TokenMetadata) -> String {
         let extra = token.extra.clone();
         match extra {
