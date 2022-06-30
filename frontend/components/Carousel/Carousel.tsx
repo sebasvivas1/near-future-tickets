@@ -64,8 +64,6 @@ export default function CarouselComponent() {
     slideRef?.current?.classList?.add('fade-anim');
   };
 
-  // console.log(featuredEvents);
-
   return (
     <div className="w-full">
       {featuredEvents ? (
@@ -98,10 +96,24 @@ export default function CarouselComponent() {
                 }
               />
               <div className="flex justify-between w-full text-2xl font-bold space-x-3 lg:mt-3">
-                <button className="bg-figma-500 px-6 py-4 w-full rounded-lg text-figma-300 hover:bg-figma-300 hover:text-figma-500 transition duration-300 hover:duration-500 ">
+                <button
+                  onClick={() =>
+                    router.push(
+                      `/app/event/${featuredEvents[currentIndex].index}`
+                    )
+                  }
+                  className="bg-figma-500 px-6 py-4 w-full rounded-lg text-figma-300 hover:bg-figma-300 hover:text-figma-500 transition duration-300 hover:duration-500 "
+                >
                   Buy Now
                 </button>
-                <button className="bg-figma-500 px-6 py-4 w-full rounded-lg text-figma-300 hover:bg-figma-300 hover:text-figma-500 transition duration-300 hover:duration-500 ">
+                <button
+                  onClick={() =>
+                    router.push(
+                      `/app/event/${featuredEvents[currentIndex].index}`
+                    )
+                  }
+                  className="bg-figma-500 px-6 py-4 w-full rounded-lg text-figma-300 hover:bg-figma-300 hover:text-figma-500 transition duration-300 hover:duration-500 "
+                >
                   Learn More
                 </button>
               </div>
@@ -134,10 +146,24 @@ export default function CarouselComponent() {
                 {' '}
               </div>
               <div className="flex justify-between w-full text-2xl font-bold space-x-3 lg:mt-3">
-                <button className="bg-figma-500 px-6 py-4 w-full rounded-lg text-figma-300 hover:bg-figma-300 hover:text-figma-500 transition duration-300 hover:duration-500 ">
+                <button
+                  onClick={() =>
+                    router.push(
+                      `/app/event/${featuredEvents[currentIndex].index}`
+                    )
+                  }
+                  className="bg-figma-500 px-6 py-4 w-full rounded-lg text-figma-300 hover:bg-figma-300 hover:text-figma-500 transition duration-300 hover:duration-500 "
+                >
                   Buy Now
                 </button>
-                <button className="bg-figma-500 px-6 py-4 w-full rounded-lg text-figma-300 hover:bg-figma-300 hover:text-figma-500 transition duration-300 hover:duration-500 ">
+                <button
+                  onClick={() =>
+                    router.push(
+                      `/app/event/${featuredEvents[currentIndex].index}`
+                    )
+                  }
+                  className="bg-figma-500 px-6 py-4 w-full rounded-lg text-figma-300 hover:bg-figma-300 hover:text-figma-500 transition duration-300 hover:duration-500 "
+                >
                   Learn More
                 </button>
               </div>
