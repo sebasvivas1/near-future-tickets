@@ -113,7 +113,7 @@ export default function EventData({ event }: EventProps) {
           </div>
         </div>
 
-        <div className="bg-transparent rounded-2xl lg:py-7 lg:px-11 lg:text-center">
+        <div className="bg-transparent rounded-2xl lg:py-7 lg:px-11">
         <div className="text-figma-300 lg:p-8 lg:flex lg:justify-between lg:align-middle">
           <div>
             <h2 className="lg:text-3xl">Event Information</h2>
@@ -161,8 +161,8 @@ export default function EventData({ event }: EventProps) {
           </div>
         </div>
         {isLoaded ? (
-          <div className="px-6 mb-8">
-            <h2 className="text-figma-300 ">{event?.location}</h2>
+          <div className="px-6 mb-8 text-left">
+            <h2 className="text-figma-300 mb-3">{event?.location}</h2>
             <GoogleMap
               center={center}
               zoom={16}
@@ -219,41 +219,54 @@ export default function EventData({ event }: EventProps) {
         isOpen={isOpen}
         className="w-5/6 bg-gray-200 p-12 h-3/4"
       >
-        <div>
+        <div className="w-full">
           {event.tickets.map((ticketType, index) => (
             <div
               key={index}
-              className="text-figma-100 lg:flex lg:justify-between lg:mt-3"
+              className="text-gray-700 lg:mt-3 lg:flex lg:flex-col w-1/3 bg-gray-300/[.4] rounded-lg overflow-scroll items-center align-middle lg:mb-3 font-semibold"
             >
-              <div>
+              <img src={ticketType?.metadata?.media} alt="Ticket banner" className='w-full h-auto object-contain'/>
+              <div className="text-xl py-1 lg:flex lg:justify-between w-full">
+                <div>
                 <h2>
-                  {ticketType?.metadata?.title || 'No Ticket'} Price:{' '}
+                  {ticketType?.metadata?.title || 'No Ticket'} 
+                </h2>
+                </div>
+                <div>
+                  <h2>
+                  Price:{' '}
                   {Math.round(
                     (ticketType?.price / ONE_NEAR_IN_YOCTO + Number.EPSILON) *
                       100
-                  ) / 100}
-                </h2>
+                  ) / 100} NEAR
+                  </h2>
+                </div>
               </div>
-              <div>
-                <div className="flex justify-between">
+              <div className="w-full">
+                <div className="flex justify-between lg:py-3 items-center align-middle w-full">
+                  <div className="w-full">
                   {!asGift ? (
                     <button
                       type="button"
-                      className="lg:px-4 lg:py-1.5 rounded-lg bg-figma-500 text-figma-400"
+                      className="lg:px-4 lg:py-1.5 rounded-lg bg-figma-500 text-figma-400 lg:text-lg font-semibold drop-shadow-md lg:w-full"
                       onClick={() => buyTicket(ticketType, true, receiver)}
                     >
                       Buy for me
                     </button>
                   ) : null}
+                  </div>
                   <div
-                    className=" text-figma-500 cursor-pointerr"
+                    className=" text-figma-500 cursor-pointer drop-shadow-md"
                     onClick={() => setAsGif(!asGift)}
                   >
-                    <GiftIcon className="w-7" />
+                    <GiftIcon className={`w-9 ${asGift ? 'hidden': 'block'}`} />
                   </div>
                 </div>
                 {asGift ? (
-                  <div className="text-figma-100">
+                  <div>
+                  <div className="text-gray-800 w-full flex justify-between">
+                    <div className="w-full">
+                    <h2>Receiver Account</h2>
                     <Input
                       required
                       type="text"
@@ -262,11 +275,19 @@ export default function EventData({ event }: EventProps) {
                       placeholder=""
                       className="h-8 text-sm rounded-lg my-3 text-black"
                       setValue={setReceiver}
-                      label="Receiver Account"
+                      label=""
                     />
+                    </div>
+                     <div
+                    className=" text-figma-500 cursor-pointer drop-shadow-md flex align-middle mt-2"
+                    onClick={() => setAsGif(!asGift)}
+                  >
+                    <GiftIcon className="w-9" />
+                  </div>
+                  </div>
                     <button
                       type="button"
-                      className="lg:px-4 lg:py-1.5 rounded-lg bg-figma-500 text-figma-400"
+                      className="lg:px-4 lg:py-1.5 rounded-lg bg-figma-500 text-figma-400 w-full"
                       onClick={() => buyTicket(ticketType, false, receiver)}
                     >
                       Buy as Gift

@@ -20,7 +20,7 @@ function _Input({
   ...rest
 }: InputProps) {
   return (
-    <label className="block w-full" htmlFor={name}>
+    <label className="block w-full " htmlFor={name}>
       <span className="text-figma-400">{label}</span>
       <input
         className={`mt-1 block w-full text-neutral-800 border-0 border-b ${className}`}
